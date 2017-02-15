@@ -1,86 +1,49 @@
 #include "chosdistribution.h"
 #include <math.h>
 #include <complex>
+#include <Algorithm/algorithms.h>
 
-#include <complex>
+#include "QDebug"
 
-complex<double> ChosDistribution::cgamma(complex<double> z,int OPT) {
-    complex<double> g,z0,z1;
-    double x0,q1,q2,x,y,th,th1,th2,g0,gr,gi,gr1,gi1;
-    double na,t,x1,y1,sr,si;
-    int i,j,k;
+ChosDistribution::ChosDistribution() {
+}
 
-    static double a[] = {
-        8.333333333333333e-02,
-       -2.777777777777778e-03,
-        7.936507936507937e-04,
-       -5.952380952380952e-04,
-        8.417508417508418e-04,
-       -1.917526917526918e-03,
-        6.410256410256410e-03,
-       -2.955065359477124e-02,
-        1.796443723688307e-01,
-       -1.39243221690590};
+void ChosDistribution::setDistribution(DistributionData *distribution) {
+    this->distribution = distribution;
+}
 
-    x = real(z);
-    y = imag(z);
-    if (x > 171) return complex<double>(1e308,0);
-    if ((y == 0.0) && (x == (int)x) && (x <= 0.0))
-        return complex<double>(1e308,0);
-    else if (x < 0.0) {
-        x1 = x;
-        y1 = y;
-        x = -x;
-        y = -y;
+void ChosDistribution::setInitialParams(vector<double> initialParams) {
+    this->initialParams = initialParams;
+    currParams = initialParams;
+}
+
+//https://en.wikipedia.org/wiki/Lanczos_approximation
+complex<double> ChosDistribution::gamma(complex<double> z)
+{
+    double p[8] = {676.5203681218851,
+    -1259.1392167224028, 771.32342877765313, -176.61502916214059,
+    12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+    1.5056327351493116e-7};
+
+    double pi = M_PI;
+    if ( real(z)<0.5 ) {
+        return pi / (sin(pi*z)*gamma(1.0-z));
     }
-    x0 = x;
-    if (x <= 7.0) {
-        na = (int)(7.0-x);
-        x0 = x+na;
+
+    z -= 1.0;
+    complex<double>x = 0.99999999999980993;
+
+    for (int i=0; i<8; i++) {
+        x += p[i]/(z+complex<double>(i+1,0));
     }
-    q1 = sqrt(x0*x0+y*y);
-    th = atan(y/x0);
-    gr = (x0-0.5)*log(q1)-th*y-x0+0.5*log(2.0*M_PI);
-    gi = th*(x0-0.5)+y*log(q1)-y;
-    for (k=0;k<10;k++){
-        t = pow(q1,-1.0-2.0*k);
-        gr += (a[k]*t*cos((2.0*k+1.0)*th));
-        gi -= (a[k]*t*sin((2.0*k+1.0)*th));
-    }
-    if (x <= 7.0) {
-        gr1 = 0.0;
-        gi1 = 0.0;
-        for (j=0;j<na;j++) {
-            gr1 += (0.5*log((x+j)*(x+j)+y*y));
-            gi1 += atan(y/(x+j));
-        }
-        gr -= gr1;
-        gi -= gi1;
-    }
-    if (x1 <= 0.0) {
-        q1 = sqrt(x*x+y*y);
-        th1 = atan(y/x);
-        sr = -sin(M_PI*x)*cosh(M_PI*y);
-        si = -cos(M_PI*x)*sinh(M_PI*y);
-        q2 = sqrt(sr*sr+si*si);
-        th2 = atan(si/sr);
-        if (sr < 0.0) th2 += M_PI;
-        gr = log(M_PI/(q1*q2))-gr;
-        gi = -th1-th2-gi;
-        x = x1;
-        y = y1;
-    }
-    if (OPT == 0) {
-        g0 = exp(gr);
-        gr = g0*cos(gi);
-        gi = g0*sin(gi);
-    }
-    g = complex<double>(gr,gi);
-    return g;
+
+    complex<double>t = z + (8 - 0.5);
+    return sqrt(2*pi) * pow(t,z+0.5) * exp(-t) * x;
 }
 
 complex<double> ChosDistribution::cbeta(complex<double> z1, complex<double> z2) {
-    return cgamma(z1, 0)*cgamma(z2, 0)/cgamma(z1+z2, 0);
+    return gamma(z1) * gamma(z2) / gamma(z1+z2);
+
 }
 
 double ChosDistribution::A(double beta, double ny) {
@@ -109,4 +72,131 @@ double ChosDistribution::value(double x, double m, double a, double beta, double
    double value = pow(2, m-2) * m * pow(beta, m-1) * fA * betaRe / M_PI / pow(beta*beta+ny*ny, m/2);
 
    return value;
+}
+
+double ChosDistribution::valueWithDistrParams(double x, double mean, double sig, double as, double ex) {
+    double a = mean;
+    double m = 2 / (ex - as*as);
+    double ny = m*sig*as/2;
+    double beta = sqrt(m*sig*sig - ny*ny);
+
+    return ChosDistribution::value(x, m, a, beta, ny);
+}
+
+vector<double> ChosDistribution::iterate()
+{
+    for (int i = 0; i < 10; i++) {
+        vector<double> grad = dGrad();
+        qDebug() << "grad = " << grad;
+        for (int i = 0; i < 4; i ++) {
+            if (fabs(grad[i]) > 1.0e-6) {
+                currParams[i] += grad[i];
+            }
+        }
+        qDebug() << "params = " << currParams;
+        qDebug() << "RSS = " << RSS(currParams[0], currParams[1], currParams[2], currParams[3]);
+        qDebug() << "\n";
+    }
+
+    return currParams;
+}
+
+double ChosDistribution::RSS(double mean, double sig, double as, double ex) {
+    if (distribution == nullptr) {
+        return 1e+13;
+    }
+
+//    double rss = 0;
+//    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
+//        double diff = p.second - valueWithDistrParams(p.first, mean, sig, as, ex);
+//        rss += diff * diff;
+//    }
+//    return rss;
+    double rss = Algorithms::RSS(distribution->getStepRelativePoints(), [mean, sig, as, ex](double x) {
+        return valueWithDistrParams(x, mean, sig, as, ex);
+    });
+
+    return rss;
+}
+
+vector<double> ChosDistribution::dGrad()
+{
+    vector<double>resGrad({0.0, 0.0, 0.0, 0.0});
+
+    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
+        vector<double> grad = gradDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
+        double diff = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+        for (int i = 0; i < 4; i++) {
+            double currG = grad[i];
+            resGrad[i] += diff * currG;
+        }
+    }
+
+    for (int i = 0; i < 4; i++) {
+        resGrad[i] *= 2;
+    }
+    return resGrad;
+}
+
+std::vector<double> ChosDistribution::gradDistr(double x, double mean, double sig, double as, double ex)
+{
+    double h = 0.0001;
+
+    //double derValX = (valueWithDistrParams(x+h, mean, sig, as, ex) - valueWithDistrParams(x-h, mean, sig, as, ex)) / (2*h);
+    double derValMean = (RSS(mean+h, sig, as, ex) - RSS(mean-h, sig, as, ex)) / (2*h);
+    double derValSig = (RSS(mean, sig+h, as, ex) - RSS(mean, sig-h, as, ex)) / (2*h);
+    double derValAs = (RSS(mean, sig, as+h, ex) - RSS(mean, sig, as-h, ex)) / (2*h);
+    double derValEx = (RSS(mean, sig, as, ex+h) - RSS(mean, sig, as, ex-h)) / (2*h);
+
+    return std::vector<double>({derValMean, derValSig, derValAs, derValEx});
+}
+
+vector<vector<double>> ChosDistribution::dHess()
+{
+
+    vector<vector<double>> resHess = {{0.0, 0.0, 0.0, 0.0},
+                                      {0.0, 0.0, 0.0, 0.0},
+                                      {0.0, 0.0, 0.0, 0.0},
+                                      {0.0, 0.0, 0.0, 0.0}};
+
+
+    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
+         vector<double> grad = gradDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
+         double diff = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+         vector<vector<double>> hess = hessianDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
+         for (int i = 0; i < 4; i ++) {
+             for (int j = 0; j < 4; j ++) {
+                 //resHes[i][j] += 2 * (grad[i] * grad[j] - diff*hess[i][j]);
+             }
+         }
+    }
+
+}
+
+vector<vector<double>> ChosDistribution::hessianDistr(double x, double mean, double sig, double as, double ex)
+{
+    vector<double> params = {mean, sig, as, ex};
+
+    double h = 0.0001;
+    double arg4 = valueWithDistrParams(x, params[0], params[1], params[2], params[3]);
+
+    vector<vector<double>> resHessian;
+    for (int i = 0; i < 4; i++) {
+        vector<double> jVect;
+        for (int j = 0; j < 4; j++) {
+            vector<double> dParams = params;
+            dParams[i] += h;
+            dParams[j] += h;
+            double arg1 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
+            dParams[i] -= h;
+            double arg2 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
+            dParams[j] -= h;
+            dParams[i] += h;
+            double arg3 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
+
+            jVect.push_back((arg1 - arg2 - arg3 + arg4)/h/h);
+        }
+        resHessian.push_back(jVect);
+    }
+    return resHessian;//std::vector<double>({derValMean, derValSig, derValAs, derValEx});
 }
