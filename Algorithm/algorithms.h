@@ -2,14 +2,15 @@
 #define ALGORITHMS_H
 
 #include <functional>
-#include <QVector>
-#include <QPair>
+#include <vector>
+#include <utility>
 
 class Algorithms
 {
 public:
     Algorithms();
-    static double RSS(QVector<QPair<double, double>> dataVector, const std::function<double (double)> func);
+    static double RSS(std::vector<std::pair<double, double>> dataVector, const std::function<double (double)> func);
+    //static constexpr std::vector<std::vector> linedHess(std::vector grad);
 };
 
 #endif // ALGORITHMS_H

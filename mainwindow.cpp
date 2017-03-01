@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "FileProcessing/filereader.h"
-#include "DataModel/distributiondata.h"
+
 
 //TODO: remove
 #include <numeric>
@@ -53,9 +53,9 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   double m1 = 2 / (ex1 - as1*as1);
   double ny1 = m1*sig1*as1/2;
   double beta1 = sqrt(m1*sig1*sig1 - ny1*ny1);
-/*
-  double x1 = ui->x1DoubleSpinBox->value();
 
+  double x1 = ui->x1DoubleSpinBox->value();
+/*
   double mean2 = ui->mean2DoubleSpinBox->value();
   double sig2 = ui->sig2DoubleSpinBox->value();
   double as2 = ui->as2DoubleSpinBox->value();
@@ -82,9 +82,11 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   qDebug() << "a2 = " << a2 << " m2 = " << m2 << " ny2 = " << ny2 << " beta2 = " << beta2;
   qDebug() << "a3 = " << a3 << " m3 = " << m3 << " ny3 = " << ny3 << " beta3 = " << beta3;
 */
-  for (double i=a; i<b; i+=0.001)
+  for (double i=a; i<x1; i+=0.001)
   {
+    //auto grad = ChosDistribution::functionGradient(i, mean1, sig1, as1, ex1);
     x.append(i);
+//    y.append();
 //    if (i < x1) {
         y.append(ChosDistribution::value(i, m1, a1, beta1, ny1));
        // std::vector<double> grad = ChosDistribution::grad(i, m1, a1, beta1, ny1);
@@ -130,7 +132,7 @@ DisVector MainWindow::sqrDiffVector() {
         double x = p.first;
         double chos = getChosValue(x);
         double y = (p.second - chos) * (p.second - chos);
-        sqrDiffVector.append(qMakePair<double, double>(x, y));
+        sqrDiffVector.push_back(make_pair(x, y));
     }
     return sqrDiffVector;
 }
@@ -224,7 +226,7 @@ void MainWindow::on_drawButton_clicked()
     double as1 = ui->as1DoubleSpinBox->value();
     double ex1 = ui->ex1DoubleSpinBox->value();
 
-    qDebug() << d.RSS(mean1, sig1, as1, ex1);
+    //qDebug() << d.RSS(mean1, sig1, as1, ex1);
 }
 
 void MainWindow::setupSlotConnection() {
@@ -434,7 +436,7 @@ void MainWindow::on_fitButton_clicked()
        {
            ChosDistribution distr;
            distr.setDistribution(data);
-           distr.setInitialParams({0, 0.1, 0, 0.3});
+           distr.setInitialParams({0, 0.7, 0, 0.3});
 //           //distr.dGrad();
 //           //distr.dHess();
            distr.iterate();

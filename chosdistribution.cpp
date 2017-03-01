@@ -85,34 +85,33 @@ double ChosDistribution::valueWithDistrParams(double x, double mean, double sig,
 
 vector<double> ChosDistribution::iterate()
 {
-    for (int i = 0; i < 10; i++) {
-        vector<double> grad = dGrad();
+    double learnRate = 0.1;
+    for (int i = 0; i < 25; i++) {
+        auto derev = derevetives();
+        vector<double> grad = derev.first;
+        vector<vector<double>> hess = derev.second;
+
+
         qDebug() << "grad = " << grad;
         for (int i = 0; i < 4; i ++) {
             if (fabs(grad[i]) > 1.0e-6) {
-                currParams[i] += grad[i];
+                currParams[i] -= learnRate * grad[i];
             }
         }
         qDebug() << "params = " << currParams;
-        qDebug() << "RSS = " << RSS(currParams[0], currParams[1], currParams[2], currParams[3]);
+        qDebug() << "RSS = " << RSS(distribution->getStepRelativePoints(), currParams[0], currParams[1], currParams[2], currParams[3]);
         qDebug() << "\n";
     }
 
     return currParams;
 }
 
-double ChosDistribution::RSS(double mean, double sig, double as, double ex) {
+double ChosDistribution::RSS(DisVector dataVector,double mean, double sig, double as, double ex) {
     if (distribution == nullptr) {
         return 1e+13;
     }
 
-//    double rss = 0;
-//    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
-//        double diff = p.second - valueWithDistrParams(p.first, mean, sig, as, ex);
-//        rss += diff * diff;
-//    }
-//    return rss;
-    double rss = Algorithms::RSS(distribution->getStepRelativePoints(), [mean, sig, as, ex](double x) {
+    double rss = Algorithms::RSS(dataVector, [mean, sig, as, ex](double x) {
         return valueWithDistrParams(x, mean, sig, as, ex);
     });
 
@@ -123,12 +122,12 @@ vector<double> ChosDistribution::dGrad()
 {
     vector<double>resGrad({0.0, 0.0, 0.0, 0.0});
 
-    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
-        vector<double> grad = gradDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
-        double diff = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+    for (pair<double, double> p : distribution->getStepRelativePoints())
+    {
+        vector<double> funcGrad = functionGradient(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
+        double predictionError = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
         for (int i = 0; i < 4; i++) {
-            double currG = grad[i];
-            resGrad[i] += diff * currG;
+            resGrad[i] += predictionError * funcGrad[i];
         }
     }
 
@@ -138,65 +137,50 @@ vector<double> ChosDistribution::dGrad()
     return resGrad;
 }
 
-std::vector<double> ChosDistribution::gradDistr(double x, double mean, double sig, double as, double ex)
-{
-    double h = 0.0001;
 
-    //double derValX = (valueWithDistrParams(x+h, mean, sig, as, ex) - valueWithDistrParams(x-h, mean, sig, as, ex)) / (2*h);
-    double derValMean = (RSS(mean+h, sig, as, ex) - RSS(mean-h, sig, as, ex)) / (2*h);
-    double derValSig = (RSS(mean, sig+h, as, ex) - RSS(mean, sig-h, as, ex)) / (2*h);
-    double derValAs = (RSS(mean, sig, as+h, ex) - RSS(mean, sig, as-h, ex)) / (2*h);
-    double derValEx = (RSS(mean, sig, as, ex+h) - RSS(mean, sig, as, ex-h)) / (2*h);
+pair<vector<double>, vector<vector<double>> > ChosDistribution::derevetives() {
+    vector<double> resGrad(4, 0.0);
+    vector<vector<double>> resHes(4, vector<double>(4, 0.0));
 
-    return std::vector<double>({derValMean, derValSig, derValAs, derValEx});
-}
-
-vector<vector<double>> ChosDistribution::dHess()
-{
-
-    vector<vector<double>> resHess = {{0.0, 0.0, 0.0, 0.0},
-                                      {0.0, 0.0, 0.0, 0.0},
-                                      {0.0, 0.0, 0.0, 0.0},
-                                      {0.0, 0.0, 0.0, 0.0}};
-
-
-    for (QPair<double, double> p : distribution->getStepRelativePoints()) {
-         vector<double> grad = gradDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
-         double diff = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
-         vector<vector<double>> hess = hessianDistr(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
-         for (int i = 0; i < 4; i ++) {
-             for (int j = 0; j < 4; j ++) {
-                 //resHes[i][j] += 2 * (grad[i] * grad[j] - diff*hess[i][j]);
-             }
-         }
-    }
-
-}
-
-vector<vector<double>> ChosDistribution::hessianDistr(double x, double mean, double sig, double as, double ex)
-{
-    vector<double> params = {mean, sig, as, ex};
-
-    double h = 0.0001;
-    double arg4 = valueWithDistrParams(x, params[0], params[1], params[2], params[3]);
-
-    vector<vector<double>> resHessian;
-    for (int i = 0; i < 4; i++) {
-        vector<double> jVect;
-        for (int j = 0; j < 4; j++) {
-            vector<double> dParams = params;
-            dParams[i] += h;
-            dParams[j] += h;
-            double arg1 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
-            dParams[i] -= h;
-            double arg2 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
-            dParams[j] -= h;
-            dParams[i] += h;
-            double arg3 = valueWithDistrParams(x, dParams[0], dParams[1], dParams[2], dParams[3]);
-
-            jVect.push_back((arg1 - arg2 - arg3 + arg4)/h/h);
+    for (pair<double, double> p : distribution->getStepRelativePoints())
+    {
+        vector<double> funcGrad = functionGradient(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
+        double predictionError = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+        for (int i = 0; i < 4; i++) {
+            resGrad[i] += 2 * predictionError * funcGrad[i];
+            for (int j = 0; j < 4; ++j) {
+                resHes[i][j] += 2 * funcGrad[i] * funcGrad[j];
+            }
         }
-        resHessian.push_back(jVect);
     }
-    return resHessian;//std::vector<double>({derValMean, derValSig, derValAs, derValEx});
+
+//    for (int i = 0; i < 4; i++) {
+//        resGrad[i] *= 2;
+//    }
+    return make_pair(resGrad, resHes);
 }
+
+
+
+std::vector<double> ChosDistribution::functionGradient(double x, double mean, double sig, double as, double ex) {
+    double h = 0.0001;
+
+    double dMean = (valueWithDistrParams(x, mean+h, sig, as, ex) - valueWithDistrParams(x, mean-h, sig, as, ex)) / (2*h);
+    double dSig = (valueWithDistrParams(x, mean, sig+h, as, ex) - valueWithDistrParams(x, mean, sig-h, as, ex)) / (2*h);
+    double dAs = (valueWithDistrParams(x, mean, sig, as+h, ex) - valueWithDistrParams(x, mean, sig, as-h, ex)) / (2*h);
+    double dEx = (valueWithDistrParams(x, mean, sig, as, ex+h) - valueWithDistrParams(x, mean, sig, as, ex-h)) / (2*h);
+
+    return std::vector<double>({dMean, dSig, dAs, dEx});
+}
+
+//std::vector<double> ChosDistribution::rssGradient(double mean, double sig, double as, double ex)
+//{
+//    double h = 0.0001;
+//    QVector<QPair<double, double>> dataVector = distribution->getStepRelativePoints();
+//    double dMean = (RSS(dataVector, mean+h, sig, as, ex) - RSS(dataVector, mean-h, sig, as, ex)) / (2*h);
+//    double dSig = (RSS(dataVector, mean, sig+h, as, ex) - RSS(dataVector, mean, sig-h, as, ex)) / (2*h);
+//    double dAs = (RSS(dataVector, mean, sig, as+h, ex) - RSS(dataVector, mean, sig, as-h, ex)) / (2*h);
+//    double dEx = (RSS(dataVector,mean, sig, as, ex+h) - RSS(dataVector, mean, sig, as, ex-h)) / (2*h);
+
+//    return std::vector<double>({dMean, dSig, dAs, dEx});
+//}

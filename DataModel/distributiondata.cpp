@@ -1,32 +1,33 @@
 #include "DataModel/distributiondata.h"
 #include <math.h>
+
 DistributionData::DistributionData()
 {
     pointsChanged = true;
 }
 
-void DistributionData::setPoints(QVector<QPair<double, double> > points) {
+void DistributionData::setPoints(DisVector points) {
     this->points = points;
     pointsChanged = true;
 }
 
-void DistributionData::addPoint(QPair<double, double> point) {
-    points.append(point);
+void DistributionData::addPoint(pair<double, double> point) {
+    points.push_back(point);
     pointsChanged = true;
 }
 
 void DistributionData::addPoint(double x, double y) {
-    auto pair = qMakePair(x, y);
-    points.append(pair);
+    auto pair = make_pair(x, y);
+    points.push_back(pair);
     pointsChanged = true;
 }
 
-QVector<QPair<double, double>> DistributionData::getPoints() {
+DisVector DistributionData::getPoints() {
     return points;
 }
 
-QVector<double> DistributionData::getDistributionParameters(int from, int to) {
-    QVector<QPair<double, double>> points = getStepRelativePoints();
+vector<double> DistributionData::getDistributionParameters(int from, int to) {
+    DisVector points = getStepRelativePoints();
 
     double fSumm = 0.0;
     double xfSumm = 0.0;
@@ -56,18 +57,18 @@ QVector<double> DistributionData::getDistributionParameters(int from, int to) {
     assymetry = assymetry / pow(sigma, 3) / fSumm;
     excess = excess/variance/variance/fSumm - 3;
 
-    return QVector<double>({mean, sigma, assymetry, excess});
+    return vector<double>({mean, sigma, assymetry, excess});
 }
 
 DisVector DistributionData::getRelativePoints() {
     if (pointsChanged) {
         double summ = 0;
-        for (QPair<double, double> &p : points) {
+        for (pair<double, double> &p : points) {
             summ += p.second;
         }
 
-        for (QPair<double, double> &p : points) {
-            relativePoints.append(qMakePair<double, double>(p.first, p.second/summ));
+        for (pair<double, double> &p : points) {
+            relativePoints.push_back(make_pair(p.first, p.second/summ));
         }
         pointsChanged = false;
     }
@@ -79,7 +80,7 @@ DisVector DistributionData::getStepRelativePoints() {
     DisVector stepRelativePoints;
 
     for (auto &p : getRelativePoints()) {
-        stepRelativePoints.append(qMakePair<double, double>(p.first, p.second / 0.5));
+        stepRelativePoints.push_back(make_pair(p.first, p.second / 0.5));
     }
 
     return stepRelativePoints;

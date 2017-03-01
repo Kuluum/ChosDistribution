@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "qcustomplot/qcustomplot.h"
+#include "DataModel/distributiondata.h"
 
 class DistributionData;
 
@@ -36,7 +37,7 @@ private:
     QCPBars* createBar(QCustomPlot *plotParent, double x, double height, double width);
 
     double getChosValue(double x);
-    QVector<QPair<double, double>> sqrDiffVector();
+    DisVector sqrDiffVector();
     void drawDiffChos(QCustomPlot *customPlot);
 
     double getChosValue(double x, double x1, double x2,
