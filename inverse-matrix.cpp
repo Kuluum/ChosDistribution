@@ -1,43 +1,7 @@
 //#include <conio.h>
 //#include <iostream.h>
 #include <math.h>
-/*
-//----------------------------------------------------------
-//read matrix : cin>> in c++ , scanf() in c
-int scanf(float a[100][100]){
-    int i,j,n;
-    cout<<"\n Enter Length Of Matrix N*N : ";
-    cin>>n;
-    cout<<"\n--------------------------\n";
-    for(i=0;i<n;i++)
-        for(j=0;j<n;j++){
-            cout<<" Matrix["<<i+1<<"]["<<j+1<<"] : ";
-            cin>>a[i][j];
-        }
-    cout<<"\n----------------------------------------------------\n";
-return n;
-}
 
-//-----------------------------------------------------
-// show matrix : cout<< in c++ , printf() in c
-void printf(float a[100][100],int n,int show){
-    int i,j;
-    if(show == 1)
-        for(i=0;i < n;i++){
-            for(j=0;j < n;j++)
-                cout<<" "<<a[i][j]<<" \t";
-            cout<<"\n";
-        }
-    else if(show == 2){
-        cout<<"\n\n The Inverse Of Matrix Is : \n\n";
-        for (i=0;i<n;i++){
-            for (j=0;j<n;j++)
-                cout<<" "<<a[i][j]<<" \t";
-            cout<<"\n";
-        }
-    }
-}
-*/
 //---------------------------------------------------
 //	calculate minor of matrix OR build new matrix : k-had = minor
 
@@ -113,10 +77,12 @@ void cofactor(float a[100][100],float d[100][100],int n,float determinte){
 
 //---------------------------------------------------
 //	calculate inverse of matrix
-void inverse(std::vector<std::vector<float>> a, float inv[100][100], int n){
+std::vector<std::vector<double>> inverse(std::vector<std::vector<double>> &a)
+{
+    int n = a.size();
 
     float aa[100][100];
-    //float iinv[100][100];
+    float inv[100][100];
 
     for (int i = 0; i < n; i ++) {
         for (int j = 0; j < n; j ++) {
@@ -132,7 +98,15 @@ void inverse(std::vector<std::vector<float>> a, float inv[100][100], int n){
     else
         cofactor(aa,inv,n,deter);	// read function
 
-}// end function
+    std::vector<std::vector<double>> result(n, std::vector<double>(n, 0.0));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            result[i][j] = inv[i][j];
+        }
+    }
+
+    return result;
+}
 
 //---------------------------------------------------
 //main fuction exe

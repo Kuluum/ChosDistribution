@@ -13,8 +13,6 @@
 #include <numeric>
 #include <omp.h>
 
-#include "inverse-matrix.cpp"
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)

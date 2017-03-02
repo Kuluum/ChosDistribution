@@ -2,7 +2,7 @@
 #include <math.h>
 #include <complex>
 #include <Algorithm/algorithms.h>
-
+#include "inverse-matrix.cpp"
 #include "QDebug"
 
 ChosDistribution::ChosDistribution() {
@@ -85,17 +85,69 @@ double ChosDistribution::valueWithDistrParams(double x, double mean, double sig,
 
 vector<double> ChosDistribution::iterate()
 {
-    double learnRate = 0.1;
+    double learnRate = 1;
     for (int i = 0; i < 25; i++) {
         auto derev = derevetives();
         vector<double> grad = derev.first;
         vector<vector<double>> hess = derev.second;
+        vector<vector<double>> invHess = inverse(hess);
 
+        matrix gradMatr(1, grad);
+        matrix resGradMatr = Algorithms::multMatrix(gradMatr, invHess);
+        vector<double> resGrad = resGradMatr[0];
 
-        qDebug() << "grad = " << grad;
+        qDebug() << "grad = " << resGrad;
+        for (int i = 0; i < 4; i ++) {
+            if (fabs(grad[i]) > 1.0e-6) {
+                currParams[i] -= learnRate * resGrad[i];
+            }
+        }
+        qDebug() << "params = " << currParams;
+        qDebug() << "RSS = " << RSS(distribution->getStepRelativePoints(), currParams[0], currParams[1], currParams[2], currParams[3]);
+        qDebug() << "\n";
+    }
+
+    return currParams;
+}
+
+vector<double> ChosDistribution::gradDescentLin() {
+    double learnRate = 1;
+    for (int i = 0; i < 25; i++) {
+        auto derev = derevetives();
+        vector<double> grad = derev.first;
+
+        qDebug() << "grad = " << resGrad;
         for (int i = 0; i < 4; i ++) {
             if (fabs(grad[i]) > 1.0e-6) {
                 currParams[i] -= learnRate * grad[i];
+            }
+        }
+        qDebug() << "params = " << currParams;
+        qDebug() << "RSS = " << RSS(distribution->getStepRelativePoints(), currParams[0], currParams[1], currParams[2], currParams[3]);
+        qDebug() << "\n";
+    }
+
+    return currParams;
+}
+
+
+vector<double> ChosDistribution::gradDescentQuadr()
+{
+    double learnRate = 1;
+    for (int i = 0; i < 25; i++) {
+        auto derev = derevetives();
+        vector<double> grad = derev.first;
+        vector<vector<double>> hess = derev.second;
+        vector<vector<double>> invHess = inverse(hess);
+
+        matrix gradMatr(1, grad);
+        matrix resGradMatr = Algorithms::multMatrix(gradMatr, invHess);
+        vector<double> resGrad = resGradMatr[0];
+
+        qDebug() << "grad = " << resGrad;
+        for (int i = 0; i < 4; i ++) {
+            if (fabs(grad[i]) > 1.0e-6) {
+                currParams[i] -= learnRate * resGrad[i];
             }
         }
         qDebug() << "params = " << currParams;

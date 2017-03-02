@@ -5,11 +5,16 @@
 #include <vector>
 #include <utility>
 
+using namespace std;
+
+typedef vector<vector<double>> matrix;
+
 class Algorithms
 {
 public:
     Algorithms();
-    static double RSS(std::vector<std::pair<double, double>> dataVector, const std::function<double (double)> func);
+    static double RSS(vector<pair<double, double>> dataVector, const function<double (double)> func);
+    static matrix multMatrix(matrix &m1, matrix &m2);
     //static constexpr std::vector<std::vector> linedHess(std::vector grad);
 };
 

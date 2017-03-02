@@ -19,6 +19,9 @@ public:
     static double value(double x, double m, double a, double beta, double ny);
 
     vector<double> iterate();
+    vector<double> gradDescentLin();
+    vector<double> gradDescentQuadr();
+
     vector<double> dGrad();
     pair<vector<double>, vector<vector<double>> > derevetives();
 
