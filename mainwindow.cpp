@@ -293,52 +293,34 @@ void MainWindow::on_actionOpen_triggered()
     //qDebug() << data->getDistributionParameters(7, 13);
 }
 
-#include <chrono>
-#include <iostream>
-struct profiler
-{
-    std::string name;
-    std::chrono::high_resolution_clock::time_point p;
-    profiler(std::string const &n) :
-        name(n), p(std::chrono::high_resolution_clock::now()) { }
-    ~profiler()
-    {
-        using dura = std::chrono::duration<double>;
-        auto d = std::chrono::high_resolution_clock::now() - p;
-        std::cout << name << ": "
-            << std::chrono::duration_cast<dura>(d).count()
-            << std::endl;
-    }
-};
 
-#define PROFILE_BLOCK(pbn) profiler _pfinstance(pbn)
 
-#include "alglib/interpolation.h"
+//#include "alglib/interpolation.h"
 
-using namespace alglib;
-void function_cx_1_func(const real_1d_array &c, const real_1d_array &x, double &func, void *ptr)
-{
-    // this callback calculates f(c,x)=exp(-c0*sqr(x0))
-    // where x is a position on X-axis and c is adjustable parameter
+//using namespace alglib;
+//void function_cx_1_func(const real_1d_array &c, const real_1d_array &x, double &func, void *ptr)
+//{
+//    // this callback calculates f(c,x)=exp(-c0*sqr(x0))
+//    // where x is a position on X-axis and c is adjustable parameter
 
-    if (c[1] < 0.4 || c[1]>10) {
-        func = 1e+13;
-    }
-    if (fabs(c[2]) > 2.5) {
-        func = 1e+13;
-    }
-    if (c[3] <= 1.5*c[2]*c[2]) {
-        func = 1e+13;
-    }
-    double a = c[0];
-    double m = 2 / (c[3] - c[2]*c[2]);
-    double ny = m*c[1]*c[2]/2;
-    double beta = sqrt(m*c[1]*c[1] - ny*ny);
+//    if (c[1] < 0.4 || c[1]>10) {
+//        func = 1e+13;
+//    }
+//    if (fabs(c[2]) > 2.5) {
+//        func = 1e+13;
+//    }
+//    if (c[3] <= 1.5*c[2]*c[2]) {
+//        func = 1e+13;
+//    }
+//    double a = c[0];
+//    double m = 2 / (c[3] - c[2]*c[2]);
+//    double ny = m*c[1]*c[2]/2;
+//    double beta = sqrt(m*c[1]*c[1] - ny*ny);
 
-    func = ChosDistribution::value(x[0], m, a, beta, ny);
+//    func = ChosDistribution::value(x[0], m, a, beta, ny);
 
-    //func = exp(-c[0]*pow(x[0],2));
-}
+//    //func = exp(-c[0]*pow(x[0],2));
+//}
 
 void MainWindow::on_fitButton_clicked()
 {
@@ -434,21 +416,13 @@ void MainWindow::on_fitButton_clicked()
        {
            ChosDistribution distr;
            distr.setDistribution(data);
-           distr.setInitialParams({0, 0.7, 0, 0.3});
-//           //distr.dGrad();
-//           //distr.dHess();
-           distr.iterate();
+           auto params = data->getDistributionParameters(0, 100);
+           distr.setInitialParams({params[0], params[1], 0, 0.3});
+//           distr.iterate();
+           distr.gradDescent();
+           //distr.gradDescentQuadr();
        }
-//       vector<vector<float>> matr = {
-//           {2, 4, 1},
-//           {0, 2, 1},
-//           {2, 1, 1}
-//       };
 
-//       float inv[100][100];
-//       inverse(matr, inv, 3);
-
-//        qDebug()<<"";
 
        //
        // Fitting with weights

@@ -18,18 +18,14 @@ public:
 
     static double value(double x, double m, double a, double beta, double ny);
 
-    vector<double> iterate();
-    vector<double> gradDescentLin();
-    vector<double> gradDescentQuadr();
+    void gradDescent();
+    vector<double> gradLin();
+    vector<double> gradQuadr();
 
-    vector<double> dGrad();
     pair<vector<double>, vector<vector<double>> > derevetives();
 
-//    vector<vector<double>> hessianDistr(double x, double mean, double sig, double as, double ex);
-//    vector<vector<double>> dHess();
-
     static double valueWithDistrParams(double x, double mean, double sig, double as, double ex);
-    static  std::vector<double> functionGradient(double x, double mean, double sig, double as, double ex);
+    static vector<double> functionGradient(double x, double mean, double sig, double as, double ex);
 
 
 private:
@@ -43,6 +39,8 @@ private:
     DistributionData *distribution;
     vector<double> initialParams;
     vector<double> currParams;
+
+    vector<double> shakeParams();
 };
 
 #endif // CHOSDISTRIBUTION_H

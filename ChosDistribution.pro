@@ -32,7 +32,6 @@ SOURCES += main.cpp\
     alglib/solvers.cpp \
     alglib/specialfunctions.cpp \
     alglib/statistics.cpp \
-    inverse-matrix.cpp \
     Algorithm/algorithms.cpp
 
 HEADERS  += mainwindow.h \

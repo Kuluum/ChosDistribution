@@ -32,6 +32,9 @@ vector<double> DistributionData::getDistributionParameters(int from, int to) {
     double fSumm = 0.0;
     double xfSumm = 0.0;
     int m = points.size();
+    if (to > m) {
+        to = m;
+    }
     for (int i = from; i < to; ++i) {
         auto p = points.at(i);
         fSumm += p.second;
