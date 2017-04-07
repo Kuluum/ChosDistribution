@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "qcustomplot/qcustomplot.h"
 #include "DataModel/distributiondata.h"
+#include <vector>
 
 class DistributionData;
 
@@ -29,9 +30,12 @@ private slots:
 
     void on_fitButton_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     DistributionData *data;
+    std::vector<double> descentProgress;
 
     void setupSlotConnection();
     QCPBars* createBar(QCustomPlot *plotParent, double x, double height, double width);

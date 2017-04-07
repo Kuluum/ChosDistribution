@@ -4,6 +4,7 @@
 DistributionData::DistributionData()
 {
     pointsChanged = true;
+    step = 0.5;
 }
 
 void DistributionData::setPoints(DisVector points) {
@@ -83,7 +84,7 @@ DisVector DistributionData::getStepRelativePoints() {
     DisVector stepRelativePoints;
 
     for (auto &p : getRelativePoints()) {
-        stepRelativePoints.push_back(make_pair(p.first, p.second / 0.5));
+        stepRelativePoints.push_back(make_pair(p.first, p.second / step));
     }
 
     return stepRelativePoints;

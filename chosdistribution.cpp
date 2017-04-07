@@ -83,24 +83,31 @@ double ChosDistribution::valueWithDistrParams(double x, double mean, double sig,
 }
 
 
-void ChosDistribution::gradDescent() {
+vector<double> ChosDistribution::gradDescent() {
     PROFILE_BLOCK("grad descent");
-    double rssMin = 0.0001;
+    descentProgress.clear();
+
+    double rssMin = 0.001;
     bool descentSuccess = false;
     double previousRss = 1e+6;
-//    double prevPreviousRss = 1e+6;
+    unsigned int shakeCount = 0;
 
     vector<pair<double, vector<double>> >shakeVector;
 
     double learnRate = 1;
 
-    vector<double> newParams(currParams);
+    vector<double> currentParams(this->currParams);
+    vector<double> newParams(currentParams);
+    vector<double> bestParams(4, 0.0);
+
+
+
     int step = 0;
     while(true)
     {
         step++;
         descentSuccess = false;
-        vector<double> grad = gradLin();
+        vector<double> grad = gradLin(distribution->getStepRelativePoints(), currentParams);
 
         // Seve small grad elements.
         for (int i = 0; i < 4; i ++) {
@@ -111,25 +118,28 @@ void ChosDistribution::gradDescent() {
         }
 
         double r = RSS(distribution->getStepRelativePoints(), newParams[0], newParams[1], newParams[2], newParams[3]);
-
-        qDebug() << step << "learn rate = " << learnRate << " rss = " << r;
+        descentProgress.push_back(r);
+        qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
         qDebug() << "params = " << newParams << "\n";
 
         // Bad descent step.
         if (isnan(r) || r >= previousRss) {
             // Bad descent fine.
             learnRate -= 0.5;
-
+            if (learnRate == 0) {
+                learnRate = 0.05;
+            }
             // There were too much bad steps,assume that we get curent local minimum. Lets make shake.
-            if (learnRate <= 0) {
+            if (learnRate < 0) {
                 learnRate = 1;
-                shakeVector.push_back(make_pair(previousRss, currParams));
+                shakeVector.push_back(make_pair(previousRss, currentParams));
                 newParams = shakeParams();
-                copy(newParams.begin(), newParams.end(), currParams.begin());
+                qDebug() << "shake = " << newParams;
+                currentParams = newParams;
                 previousRss = 1e+6;
             }
 
-            copy(currParams.begin(), currParams.end(), newParams.begin());
+            newParams = currentParams;
             qDebug() << "bad descent";
         }
         // Good descent step.
@@ -138,40 +148,50 @@ void ChosDistribution::gradDescent() {
             learnRate += 0.1;
 
             previousRss = r;
-            copy(newParams.begin(), newParams.end(), currParams.begin());
+            currentParams = newParams;
         }
 
         // Get target.
         if(r <= rssMin) {
+            bestParams = newParams;
             break;
         }
 
         // Last descent was too small, we get local minimum. Lets make shake to continue searching.
         if (!descentSuccess) {
             learnRate = 1;
-            shakeVector.push_back(make_pair(previousRss, currParams));
+            shakeVector.push_back(make_pair(previousRss, currentParams));
             newParams = shakeParams();
-            copy(newParams.begin(), newParams.end(), currParams.begin());
+            qDebug() << "shake = " << newParams;
+            currentParams = newParams;
             previousRss = 1e+6;
         }
 
-        if (shakeVector.size() >= 50) {
+        if (shakeVector.size() >= shakeCount + 1) {
             sort(shakeVector.begin(), shakeVector.end(),
                 [](const pair<double, vector<double>> &a, const pair<double, vector<double>> & b) -> bool
             {
-                return a.first > b.first;
+                return a.first < b.first;
             });
+            bestParams = shakeVector[0].second;
+            currentParams = bestParams;
             break;
         }
     }
+    return bestParams;
 
 }
 
+#include <random>
+
 double fRand(double fMin, double fMax)
 {
-    srand(time(0));
-    double f = (double)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
+    std::uniform_real_distribution<double> unif(fMin, fMax);
+    std::random_device rd;
+    std::default_random_engine re(rd());
+    double a_random_double = unif(re);
+
+    return a_random_double;
 }
 
 vector<double> ChosDistribution::shakeParams()
@@ -187,23 +207,23 @@ vector<double> ChosDistribution::shakeParams()
     double maxAs = 2.5;
 
     double maxEx = 20;
-    srand(time(0));
     double mean = fRand(minMean, maxMean);
     double sig = fRand(minSig, maxSig);
     double as = fRand(minAs, maxAs);
     double ex = fRand (1.5 * as * as, maxEx);
 
-    return vector<double>({mean, sig, as, ex});
+    auto v = vector<double>({mean, sig, as, ex});
+    return v;
 }
 
-vector<double> ChosDistribution::gradLin()
+vector<double> ChosDistribution::gradLin(vector<pair<double, double>> points, vector<double> params)
 {
     vector<double>resGrad(4, 0.0);
 
-    for (pair<double, double> p : distribution->getStepRelativePoints())
+    for (pair<double, double> p : points)
     {
-        vector<double> funcGrad = functionGradient(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
-        double predictionError = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+        vector<double> funcGrad = functionGradient(p.first, params[0], params[1], params[2], params[3]);
+        double predictionError = valueWithDistrParams(p.first, params[0], params[1], params[2], params[3]) - p.second;
         for (int i = 0; i < 4; i++) {
             resGrad[i] += 2 * predictionError * funcGrad[i];
         }
@@ -213,15 +233,15 @@ vector<double> ChosDistribution::gradLin()
 }
 
 
-vector<double> ChosDistribution::gradQuadr()
+vector<double> ChosDistribution::gradQuadr(vector<pair<double, double>> points, vector<double> params)
 {
     vector<double> grad(4, 0.0);
     vector<vector<double>> hess(4, vector<double>(4, 0.0));
 
-    for (pair<double, double> p : distribution->getStepRelativePoints())
+    for (pair<double, double> p : points)
     {
-        vector<double> funcGrad = functionGradient(p.first, currParams[0], currParams[1], currParams[2], currParams[3]);
-        double predictionError = valueWithDistrParams(p.first, currParams[0], currParams[1], currParams[2], currParams[3]) - p.second;
+        vector<double> funcGrad = functionGradient(p.first, params[0], params[1], params[2], params[3]);
+        double predictionError = valueWithDistrParams(p.first, params[0], params[1], params[2], params[3]) - p.second;
         for (int i = 0; i < 4; i++) {
             grad[i] += 2 * predictionError * funcGrad[i];
             for (int j = 0; j < 4; ++j) {

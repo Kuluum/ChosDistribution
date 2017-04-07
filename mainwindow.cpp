@@ -8,6 +8,8 @@
 
 #include "FileProcessing/filereader.h"
 
+//UI
+#include "descentprogressview.h"
 
 //TODO: remove
 #include <numeric>
@@ -80,19 +82,13 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   qDebug() << "a2 = " << a2 << " m2 = " << m2 << " ny2 = " << ny2 << " beta2 = " << beta2;
   qDebug() << "a3 = " << a3 << " m3 = " << m3 << " ny3 = " << ny3 << " beta3 = " << beta3;
 */
-  for (double i=a; i<x1; i+=0.001)
+  for (double i=-10; i<10; i+=0.001)
   {
-    //auto grad = ChosDistribution::functionGradient(i, mean1, sig1, as1, ex1);
+
     x.append(i);
-//    y.append();
+
 //    if (i < x1) {
         y.append(ChosDistribution::value(i, m1, a1, beta1, ny1));
-       // std::vector<double> grad = ChosDistribution::grad(i, m1, a1, beta1, ny1);
-       // dx.append(grad[0]);
-       // dm.append(grad[1]);
-       // da.append(grad[2]);
-       // dbeta.append(grad[3]);
-       // dny.append(grad[4]);
 //    }
 //    else if (i < x2) {
 //        y.append(ChosDistribution::value(i, m2, a2, beta2, ny2));
@@ -104,24 +100,22 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
 
   customPlot->addGraph();
   customPlot->graph(0)->setData(x, y);
- // customPlot->addGraph();
- // customPlot->graph(1)->setData(x, dny);
 }
 
-void MainWindow::drawDiffChos(QCustomPlot *customPlot)
-{
-    QVector<double> x, y;
+//void MainWindow::drawDiffChos(QCustomPlot *customPlot)
+//{
+//    QVector<double> x, y;
 
-    auto sqrDiff = sqrDiffVector();
-    for (auto &p : sqrDiff)
-    {
-        x.append(p.first);
-        y.append(p.second);
-    }
+//    auto sqrDiff = sqrDiffVector();
+//    for (auto &p : sqrDiff)
+//    {
+//        x.append(p.first);
+//        y.append(p.second);
+//    }
 
-    customPlot->addGraph();
-    customPlot->graph(1)->setData(x, y);
-}
+//    customPlot->addGraph();
+//    customPlot->graph(1)->setData(x, y);
+//}
 
 DisVector MainWindow::sqrDiffVector() {
     DisVector sqrDiffVector;
@@ -214,7 +208,7 @@ void MainWindow::on_drawButton_clicked()
 {
     ui->plotWidget->clearGraphs();
     drawChos(ui->plotWidget);
-    drawDiffChos(ui->plotWidget);
+    //drawDiffChos(ui->plotWidget);
     ui->plotWidget->replot();
     ChosDistribution d;
     d.setDistribution(data);
@@ -223,8 +217,6 @@ void MainWindow::on_drawButton_clicked()
     double sig1 = ui->sig1DoubleSpinBox->value();
     double as1 = ui->as1DoubleSpinBox->value();
     double ex1 = ui->ex1DoubleSpinBox->value();
-
-    //qDebug() << d.RSS(mean1, sig1, as1, ex1);
 }
 
 void MainWindow::setupSlotConnection() {
@@ -284,155 +276,31 @@ void MainWindow::on_actionOpen_triggered()
         createBar(ui->plotWidget, p.first, p.second, 0.5);
     }
     ui->plotWidget->replot();
-   // auto relPoints = data->getStepRelativePoints();
-  //  qDebug() << relPoints;
-   // qDebug() << "point sum =" << std::accumulate(relPoints.begin(), relPoints.end(), 0.0, [](double a, QPair<double, double>p) -> double {
-   //     return a + p.second;
-   // });
-    //qDebug() << data->getDistributionParameters(0, 6);
-    //qDebug() << data->getDistributionParameters(7, 13);
 }
 
 
 
-//#include "alglib/interpolation.h"
-
-//using namespace alglib;
-//void function_cx_1_func(const real_1d_array &c, const real_1d_array &x, double &func, void *ptr)
-//{
-//    // this callback calculates f(c,x)=exp(-c0*sqr(x0))
-//    // where x is a position on X-axis and c is adjustable parameter
-
-//    if (c[1] < 0.4 || c[1]>10) {
-//        func = 1e+13;
-//    }
-//    if (fabs(c[2]) > 2.5) {
-//        func = 1e+13;
-//    }
-//    if (c[3] <= 1.5*c[2]*c[2]) {
-//        func = 1e+13;
-//    }
-//    double a = c[0];
-//    double m = 2 / (c[3] - c[2]*c[2]);
-//    double ny = m*c[1]*c[2]/2;
-//    double beta = sqrt(m*c[1]*c[1] - ny*ny);
-
-//    func = ChosDistribution::value(x[0], m, a, beta, ny);
-
-//    //func = exp(-c[0]*pow(x[0],2));
-//}
-
 void MainWindow::on_fitButton_clicked()
 {
-  //  double a = data->getStepRelativePoints().first().first - 0.25;
-   // double b = data->getStepRelativePoints().last().first + 0.25;
-    //double x1 = b;
-
-  //  double minDiff = 10000000000.0;
-  //  double minMean = 0;
-  //  double minSig = 0;
-  //  double minAs = 0;
-  //  double minEx = 0;
-
-//    std::vector<QPair<double, double>> stdVect = data->getStepRelativePoints().toStdVector();
-
-    //for (auto &p : data->getStepRelativePoints()) {
-    //    std::pair pair = make_pair(p.first, p.second);
-    //    stdVect
-    //}
-/*
-    int numThreads = ui->numThreadsSpinBox->value();
-
-    {
-        std::cout << "num threads = " << numThreads << " ";
-        PROFILE_BLOCK("time");
-
-  //  for (int mean = -5; mean < 5; mean += 1 ) {
-       int mean = 0;
-#pragma omp parallel for num_threads(numThreads)
-        for (int sig10 = 0; sig10 < 95; sig10++) {
-            std::cout << sig10/95. * 100.0 << "%"<<std::endl;
-            for (int as10 = 0; as10 < 50; as10++) {
-                for (int ex10 = 0; ex10 < 100; ex10++) {
-
-                    double sig = sig10/10.0 + 0.4;
-                    double as = as10/10.0 - 2.5;
-                    double ex = as*as + ex10/10.0 + 0.1;
-
-                    //for (int x10 = 0; x10 <100; x10++) {
-                       // std::cout << "sig = " << sig10 << " as = " << as10 << " ex = " << ex10 << " x = " << x10;
-                        double x = 5;
-                        double value = getChosValueWithDistrParams(x, 0, sig, as, ex);
-                        //chosValuesArr[sig10][as10][ex10][x10] = value;
-                    //}
-                }
-            }
-        }
-    //}
-    }
-
-    */
-
-    //
-    // In this example we demonstrate exponential fitting
-    // by f(x) = exp(-c*x^2)
-    // using function value and gradient (with respect to c).
-    //
-    //
-       // In this example we demonstrate exponential fitting
-       // by f(x) = exp(-c*x^2)
-       // using function value only.
-       //
-       // Gradient is estimated using combination of numerical differences
-       // and secant updates. diffstep variable stores differentiation step
-       // (we have to tell algorithm what step to use).
-       //
-//       real_2d_array x = "[[-1.5],[-1.0],[-0.5],[0.0],[0.5],[1.0],[1.5]]";
-//       real_1d_array y = "[0.129, 0.241, 0.352, 0.398, 0.352, 0.241, 0.129]";
-//       real_1d_array c = "[-0.5, 0.15, 0.1, 0.2]";
-//       real_1d_array bndl = "[-1.0, 0.05, -2.5, 0.1]";
-//       real_1d_array bndu = "[1.0, 10.0, 2.5, 10.0]";
-//       double epsf = 1;
-//       double epsx = 0.00001;
-//       ae_int_t maxits = 0;
-//       ae_int_t info;
-//       lsfitstate state;
-//       lsfitreport rep;
-//       double diffstep = 0.0001;
-
-//       //
-//       // Fitting without weights
-//       //
-//       lsfitcreatef(x, y, c, diffstep, state);
-//       lsfitsetbc(state, bndl, bndu);
-//       lsfitsetcond(state, epsf, epsx, maxits);
-//       alglib::lsfitfit(state, function_cx_1_func);
-//       lsfitresults(state, info, c, rep);
-//       printf("%d\n", int(info)); // EXPECTED: 2
-//       std::string str = c.tostring(4);
-//       qDebug() << ""; // EXPECTED: [1.5]
-
        if (data != nullptr)
        {
            ChosDistribution distr;
            distr.setDistribution(data);
-           auto params = data->getDistributionParameters(0, 100);
+           auto params = data->getDistributionParameters(0, 200);
            distr.setInitialParams({params[0], params[1], 0, 0.3});
-//           distr.iterate();
-           distr.gradDescent();
-           //distr.gradDescentQuadr();
+           auto matchParams = distr.gradDescent();
+           descentProgress = distr.descentProgress;
+           ui->mean1DoubleSpinBox->setValue(matchParams[0]);
+           ui->sig1DoubleSpinBox->setValue(matchParams[1]);
+           ui->as1DoubleSpinBox->setValue(matchParams[2]);
+           ui->ex1DoubleSpinBox->setValue(matchParams[3]);
+           drawChos(ui->plotWidget);
        }
+}
 
-
-       //
-       // Fitting with weights
-       // (you can change weights and see how it changes result)
-       //
-     //  real_1d_array w = "[1,1,1,1,1,1,1,1,1,1,1]";
-     //  lsfitcreatewf(x, y, w, c, diffstep, state);
-     //  lsfitsetcond(state, epsf, epsx, maxits);
-     //  alglib::lsfitfit(state, function_cx_1_func);
-     //  lsfitresults(state, info, c, rep);
-     //  printf("%d\n", int(info)); // EXPECTED: 2
-     //  printf("%s\n", c.tostring(1).c_str()); // EXPECTED: [1.5]
+void MainWindow::on_pushButton_clicked()
+{
+    DescentProgressView  *descentProgressView = new DescentProgressView();
+    descentProgressView->setDescentProgress(this->descentProgress);
+    descentProgressView -> show();
 }

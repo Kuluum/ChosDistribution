@@ -19,20 +19,8 @@ SOURCES += main.cpp\
     embededtest.cpp \
     FileProcessing/filereader.cpp \
     DataModel/distributiondata.cpp \
-    alglib/alglibinternal.cpp \
-    alglib/alglibmisc.cpp \
-    alglib/ap.cpp \
-    alglib/dataanalysis.cpp \
-    alglib/diffequations.cpp \
-    alglib/fasttransforms.cpp \
-    alglib/integration.cpp \
-    alglib/interpolation.cpp \
-    alglib/linalg.cpp \
-    alglib/optimization.cpp \
-    alglib/solvers.cpp \
-    alglib/specialfunctions.cpp \
-    alglib/statistics.cpp \
-    Algorithm/algorithms.cpp
+    Algorithm/algorithms.cpp \
+    descentprogressview.cpp
 
 HEADERS  += mainwindow.h \
     chosdistribution.h \
@@ -40,24 +28,12 @@ HEADERS  += mainwindow.h \
     embededtest.h \
     FileProcessing/filereader.h \
     DataModel/distributiondata.h \
-    alglib/alglibinternal.h \
-    alglib/alglibmisc.h \
-    alglib/ap.h \
-    alglib/dataanalysis.h \
-    alglib/diffequations.h \
-    alglib/fasttransforms.h \
-    alglib/integration.h \
-    alglib/interpolation.h \
-    alglib/linalg.h \
-    alglib/optimization.h \
-    alglib/solvers.h \
-    alglib/specialfunctions.h \
-    alglib/statistics.h \
-    alglib/stdafx.h \
-    Algorithm/algorithms.h
+    Algorithm/algorithms.h \
+    descentprogressview.h
 
 FORMS    += mainwindow.ui \
-    embededtest.ui
+    embededtest.ui \
+    descentprogressview.ui
 
 CONFIG += c++14
 

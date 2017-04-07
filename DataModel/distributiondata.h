@@ -24,6 +24,7 @@ public:
 private:
     DisVector points;
     DisVector relativePoints;
+    double step;
     bool pointsChanged;
 };
 

@@ -7,9 +7,11 @@
 
 
 #include <chrono>
-#include <iostream>
+#include <sstream>
+#include <qdebug.h>
 struct profiler
 {
+
     std::string name;
     std::chrono::high_resolution_clock::time_point p;
     profiler(std::string const &n) :
@@ -18,9 +20,10 @@ struct profiler
     {
         using dura = std::chrono::duration<double>;
         auto d = std::chrono::high_resolution_clock::now() - p;
-        std::cout << name << ": "
-            << std::chrono::duration_cast<dura>(d).count()
-            << std::endl;
+        std::stringstream s;
+        s << name << ": " << std::chrono::duration_cast<dura>(d).count();
+
+        qDebug() << QString::fromStdString(s.str());
     }
 };
 

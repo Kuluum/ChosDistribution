@@ -18,14 +18,13 @@ public:
 
     static double value(double x, double m, double a, double beta, double ny);
 
-    void gradDescent();
-    vector<double> gradLin();
-    vector<double> gradQuadr();
+    vector<double> gradDescent();
 
     pair<vector<double>, vector<vector<double>> > derevetives();
 
     static double valueWithDistrParams(double x, double mean, double sig, double as, double ex);
-    static vector<double> functionGradient(double x, double mean, double sig, double as, double ex);
+
+    vector<double>descentProgress;
 
 
 private:
@@ -33,6 +32,9 @@ private:
     static complex<double> cbeta(complex<double> z1, complex<double> z2);
     static complex<double> gamma(complex<double> z);
 
+    static vector<double> functionGradient(double x, double mean, double sig, double as, double ex);
+    vector<double> gradLin(vector<pair<double, double>> points, vector<double> params);
+    vector<double> gradQuadr(vector<pair<double, double>> points, vector<double> params);
 //    vector<double> rssGradient(double mean, double sig, double as, double ex);
 
 
