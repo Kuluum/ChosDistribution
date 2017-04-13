@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     FileProcessing/filereader.cpp \
     DataModel/distributiondata.cpp \
     Algorithm/algorithms.cpp \
-    descentprogressview.cpp
+    descentprogressview.cpp \
+    graphwindow.cpp
 
 HEADERS  += mainwindow.h \
     chosdistribution.h \
@@ -29,11 +30,13 @@ HEADERS  += mainwindow.h \
     FileProcessing/filereader.h \
     DataModel/distributiondata.h \
     Algorithm/algorithms.h \
-    descentprogressview.h
+    descentprogressview.h \
+    graphwindow.h
 
 FORMS    += mainwindow.ui \
     embededtest.ui \
-    descentprogressview.ui
+    descentprogressview.ui \
+    graphwindow.ui
 
 CONFIG += c++14
 

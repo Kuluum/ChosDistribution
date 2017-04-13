@@ -6,7 +6,8 @@
 
 using namespace std;
 
-typedef vector<pair<double, double>> DisVector;
+typedef pair<double, double> Point;
+typedef vector<Point> PointsVector;
 
 class DistributionData
 {
@@ -14,16 +15,18 @@ public:
     DistributionData();
     void addPoint(pair<double, double> point);
     void addPoint(double x, double y);
-    void setPoints(DisVector points);
+    void setPoints(PointsVector points);
+    void setStep(double step);
 
-    DisVector getPoints();
-    DisVector getRelativePoints();
-    DisVector getStepRelativePoints();
+    PointsVector getPoints();
+    PointsVector getRelativePoints();
+    PointsVector getStepRelativePoints();
+    PointsVector getStepRelativePoints(int from, int to);
     vector<double> getDistributionParameters(int, int);
 
 private:
-    DisVector points;
-    DisVector relativePoints;
+    PointsVector points;
+    PointsVector relativePoints;
     double step;
     bool pointsChanged;
 };

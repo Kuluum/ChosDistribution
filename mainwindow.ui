@@ -19,7 +19,7 @@
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
       <property name="spacing">
        <number>6</number>
       </property>
@@ -52,90 +52,24 @@
         <property name="bottomMargin">
          <number>1</number>
         </property>
-        <item row="14" column="1">
-         <widget class="QDoubleSpinBox" name="ex3DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>0.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QDoubleSpinBox" name="mean1DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>-10000.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="11" column="0">
-         <widget class="QLabel" name="label_11">
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_5">
           <property name="text">
-           <string>mean3</string>
+           <string>mean2</string>
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
-         <widget class="QDoubleSpinBox" name="mean2DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>-10000.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.000000000000000</double>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>As1</string>
           </property>
          </widget>
         </item>
-        <item row="7" column="1">
-         <widget class="QDoubleSpinBox" name="sig2DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QDoubleSpinBox" name="sig1DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>0.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
+        <item row="15" column="0">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>b</string>
           </property>
          </widget>
         </item>
@@ -149,61 +83,6 @@
           </property>
           <property name="maximum">
            <double>10000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>As1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>mean2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="13" column="0">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>As3</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Ex1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QDoubleSpinBox" name="aDoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>-10000.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>sig1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>mean1</string>
           </property>
          </widget>
         </item>
@@ -232,48 +111,6 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="1">
-         <widget class="QDoubleSpinBox" name="ex2DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>0.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>0.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_7">
-          <property name="text">
-           <string>As2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="12" column="1">
-         <widget class="QDoubleSpinBox" name="sig3DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>0.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
         <item row="8" column="1">
          <widget class="QDoubleSpinBox" name="as2DoubleSpinBox">
           <property name="decimals">
@@ -293,10 +130,36 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="label_6">
+        <item row="7" column="1">
+         <widget class="QDoubleSpinBox" name="sig2DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="1">
+         <widget class="QDoubleSpinBox" name="mean3DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>-10000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="label_10">
           <property name="text">
-           <string>sig2</string>
+           <string>x2</string>
           </property>
          </widget>
         </item>
@@ -307,15 +170,8 @@
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Ex2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="1">
-         <widget class="QDoubleSpinBox" name="x2DoubleSpinBox">
+        <item row="6" column="1">
+         <widget class="QDoubleSpinBox" name="mean2DoubleSpinBox">
           <property name="decimals">
            <number>3</number>
           </property>
@@ -327,6 +183,16 @@
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>As2</string>
           </property>
          </widget>
         </item>
@@ -337,13 +203,13 @@
           </property>
          </widget>
         </item>
-        <item row="13" column="1">
-         <widget class="QDoubleSpinBox" name="as3DoubleSpinBox">
+        <item row="9" column="1">
+         <widget class="QDoubleSpinBox" name="ex2DoubleSpinBox">
           <property name="decimals">
            <number>3</number>
           </property>
           <property name="minimum">
-           <double>-10000.000000000000000</double>
+           <double>0.000000000000000</double>
           </property>
           <property name="maximum">
            <double>10000.000000000000000</double>
@@ -351,12 +217,8 @@
           <property name="singleStep">
            <double>0.100000000000000</double>
           </property>
-         </widget>
-        </item>
-        <item row="14" column="0">
-         <widget class="QLabel" name="label_14">
-          <property name="text">
-           <string>Ex3</string>
+          <property name="value">
+           <double>0.000000000000000</double>
           </property>
          </widget>
         </item>
@@ -385,22 +247,22 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_4">
+        <item row="9" column="0">
+         <widget class="QLabel" name="label_9">
           <property name="text">
-           <string>x1</string>
+           <string>Ex2</string>
           </property>
          </widget>
         </item>
-        <item row="10" column="0">
-         <widget class="QLabel" name="label_10">
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>x2</string>
+           <string>sig2</string>
           </property>
          </widget>
         </item>
-        <item row="11" column="1">
-         <widget class="QDoubleSpinBox" name="mean3DoubleSpinBox">
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="aDoubleSpinBox">
           <property name="decimals">
            <number>3</number>
           </property>
@@ -409,9 +271,6 @@
           </property>
           <property name="maximum">
            <double>10000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
           </property>
          </widget>
         </item>
@@ -428,24 +287,175 @@
           </property>
          </widget>
         </item>
-        <item row="15" column="0">
-         <widget class="QLabel" name="label_16">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_8">
           <property name="text">
-           <string>b</string>
+           <string>sig1</string>
           </property>
          </widget>
         </item>
+        <item row="14" column="1">
+         <widget class="QDoubleSpinBox" name="ex3DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>x1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Ex1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="0">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>As3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="14" column="0">
+         <widget class="QLabel" name="label_14">
+          <property name="text">
+           <string>Ex3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QDoubleSpinBox" name="sig1DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="1">
+         <widget class="QDoubleSpinBox" name="x2DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>-10000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="13" column="1">
+         <widget class="QDoubleSpinBox" name="as3DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>-10000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="mean1DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>-10000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+          <property name="value">
+           <double>0.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>mean1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="12" column="1">
+         <widget class="QDoubleSpinBox" name="sig3DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>0.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>10000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>mean3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="16" column="1">
+         <widget class="QSpinBox" name="quantilSpinBox"/>
+        </item>
+        <item row="16" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>quant1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="0">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>shake</string>
+          </property>
+         </widget>
+        </item>
+        <item row="17" column="1">
+         <widget class="QSpinBox" name="shakeSpinBox"/>
+        </item>
        </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="drawButton">
-        <property name="text">
-         <string>Draw</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSpinBox" name="numThreadsSpinBox"/>
       </item>
       <item>
        <widget class="QPushButton" name="fitButton">
@@ -492,9 +502,9 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="sigAffectionButton">
         <property name="text">
-         <string>PushButton</string>
+         <string>Sig affection</string>
         </property>
        </widget>
       </item>
@@ -560,7 +570,6 @@
   <tabstop>as3DoubleSpinBox</tabstop>
   <tabstop>ex3DoubleSpinBox</tabstop>
   <tabstop>bDoubleSpinBox</tabstop>
-  <tabstop>drawButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

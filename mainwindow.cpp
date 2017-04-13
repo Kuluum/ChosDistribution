@@ -10,6 +10,7 @@
 
 //UI
 #include "descentprogressview.h"
+#include "graphwindow.h"
 
 //TODO: remove
 #include <numeric>
@@ -49,25 +50,18 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   double as1 = ui->as1DoubleSpinBox->value();
   double ex1 = ui->ex1DoubleSpinBox->value();
 
-  double a1 = mean1;
-  double m1 = 2 / (ex1 - as1*as1);
-  double ny1 = m1*sig1*as1/2;
-  double beta1 = sqrt(m1*sig1*sig1 - ny1*ny1);
 
   double x1 = ui->x1DoubleSpinBox->value();
-/*
+
   double mean2 = ui->mean2DoubleSpinBox->value();
   double sig2 = ui->sig2DoubleSpinBox->value();
   double as2 = ui->as2DoubleSpinBox->value();
   double ex2 = ui->ex2DoubleSpinBox->value();
 
-  double a2 = mean2;
-  double m2 = 2 / (ex2 - as2*as2);
-  double ny2 = m2*sig2*as2/2;
-  double beta2 = sqrt(m2*sig2*sig2 - ny2*ny2);
+
 
   double x2 = ui->x2DoubleSpinBox->value();
-
+/*
   double mean3 = ui->mean3DoubleSpinBox->value();
   double sig3 = ui->sig3DoubleSpinBox->value();
   double as3 = ui->as3DoubleSpinBox->value();
@@ -82,17 +76,19 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   qDebug() << "a2 = " << a2 << " m2 = " << m2 << " ny2 = " << ny2 << " beta2 = " << beta2;
   qDebug() << "a3 = " << a3 << " m3 = " << m3 << " ny3 = " << ny3 << " beta3 = " << beta3;
 */
-  for (double i=-10; i<10; i+=0.001)
+  for (double i=a; i<=x2; i+=0.001)
   {
 
     x.append(i);
 
-//    if (i < x1) {
-        y.append(ChosDistribution::value(i, m1, a1, beta1, ny1));
-//    }
-//    else if (i < x2) {
+    if (i < x1) {
+//        y.append(ChosDistribution::value(i, m1, a1, beta1, ny1));
+        y.append(ChosDistribution::valueWithDistrParams(i, mean1, sig1, as1, ex1));
+    }
+    else if (i < x2) {
+        y.append(ChosDistribution::valueWithDistrParams(i, mean2, sig2, as2, ex2));
 //        y.append(ChosDistribution::value(i, m2, a2, beta2, ny2));
-//    }
+    }
 //    else {
 //        y.append(ChosDistribution::value(i, m3, a3, beta3, ny3));
 //    }
@@ -102,32 +98,6 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   customPlot->graph(0)->setData(x, y);
 }
 
-//void MainWindow::drawDiffChos(QCustomPlot *customPlot)
-//{
-//    QVector<double> x, y;
-
-//    auto sqrDiff = sqrDiffVector();
-//    for (auto &p : sqrDiff)
-//    {
-//        x.append(p.first);
-//        y.append(p.second);
-//    }
-
-//    customPlot->addGraph();
-//    customPlot->graph(1)->setData(x, y);
-//}
-
-DisVector MainWindow::sqrDiffVector() {
-    DisVector sqrDiffVector;
-
-    for (auto &p : data->getStepRelativePoints()) {
-        double x = p.first;
-        double chos = getChosValue(x);
-        double y = (p.second - chos) * (p.second - chos);
-        sqrDiffVector.push_back(make_pair(x, y));
-    }
-    return sqrDiffVector;
-}
 
 double MainWindow::getChosValue(double x)
 {
@@ -179,22 +149,6 @@ double MainWindow::getChosValue(double x)
 
 }
 
-double MainWindow::getChosValue(double x, double x1, double x2,
-                                double m1, double a1, double beta1, double ny1,
-                                double m2, double a2, double beta2, double ny2,
-                                double m3, double a3, double beta3, double ny3)
-{
-    if (x < x1) {
-        return ChosDistribution::value(x, m1, a1, beta1, ny1);
-    }
-    else if (x < x2) {
-        return ChosDistribution::value(x, m2, a2, beta2, ny2);
-    }
-    else {
-        return ChosDistribution::value(x, m3, a3, beta3, ny3);
-    }
-}
-
 double MainWindow::getChosValueWithDistrParams(double x, double mean, double sig, double as, double ex) {
     double a = mean;
     double m = 2 / (ex - as*as);
@@ -204,22 +158,10 @@ double MainWindow::getChosValueWithDistrParams(double x, double mean, double sig
     return ChosDistribution::value(x, m, a, beta, ny);
 }
 
-void MainWindow::on_drawButton_clicked()
-{
-    ui->plotWidget->clearGraphs();
-    drawChos(ui->plotWidget);
-    //drawDiffChos(ui->plotWidget);
-    ui->plotWidget->replot();
-    ChosDistribution d;
-    d.setDistribution(data);
-
-    double mean1 = ui->mean1DoubleSpinBox->value();
-    double sig1 = ui->sig1DoubleSpinBox->value();
-    double as1 = ui->as1DoubleSpinBox->value();
-    double ex1 = ui->ex1DoubleSpinBox->value();
-}
 
 void MainWindow::setupSlotConnection() {
+    connect(ui->aDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(spinboxValueChanged()));
+
     connect(ui->mean1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(spinboxValueChanged()));
     connect(ui->sig1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(spinboxValueChanged()));
     connect(ui->as1DoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(spinboxValueChanged()));
@@ -259,7 +201,8 @@ void MainWindow::on_actionOpen_triggered()
 {
     FileReader f;
     QStringList stringList = f.readFileWithDialog(this);
-    QVector<QPair<double, double>> points;
+//    QVector<QPair<double, double>> points;
+    PointsVector points;
     data = new DistributionData();
     for (QString str : stringList) {
         QStringList pointCoords = str.split(" ");
@@ -267,13 +210,18 @@ void MainWindow::on_actionOpen_triggered()
             QString xStr = pointCoords.at(0);
             double x = xStr.toDouble();
             double y = pointCoords.at(1).toDouble();
-            points.append(qMakePair<double, double>(x, y));
-            data->addPoint(x, y);
+            points.push_back(make_pair(x, y));
         }
     }
+    data->setPoints(points);
+    double step = points[1].first - points[0].first;
+    data->setStep(step);
+
+    ui->quantilSpinBox->setValue(points.size()/2);
+
     ui->plotWidget->clearPlottables();
     for (auto &p : data->getStepRelativePoints()) {
-        createBar(ui->plotWidget, p.first, p.second, 0.5);
+        createBar(ui->plotWidget, p.first, p.second, step);
     }
     ui->plotWidget->replot();
 }
@@ -282,25 +230,74 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_fitButton_clicked()
 {
-       if (data != nullptr)
-       {
-           ChosDistribution distr;
-           distr.setDistribution(data);
-           auto params = data->getDistributionParameters(0, 200);
-           distr.setInitialParams({params[0], params[1], 0, 0.3});
-           auto matchParams = distr.gradDescent();
-           descentProgress = distr.descentProgress;
-           ui->mean1DoubleSpinBox->setValue(matchParams[0]);
-           ui->sig1DoubleSpinBox->setValue(matchParams[1]);
-           ui->as1DoubleSpinBox->setValue(matchParams[2]);
-           ui->ex1DoubleSpinBox->setValue(matchParams[3]);
-           drawChos(ui->plotWidget);
-       }
+    if (data != nullptr)
+    {
+        chosVector.clear();
+        ChosDistribution distr1;
+        ChosDistribution distr2;
+
+        auto points = data->getStepRelativePoints();
+
+
+        int quantilElem = ui->quantilSpinBox->value();
+        int size = points.size();
+
+        PointsVector distr1Points(points.begin(), points.begin()+quantilElem+1);
+        PointsVector distr2Points(points.begin()+ quantilElem, points.end());
+        auto params1 = data->getDistributionParameters(0, quantilElem+1);
+        auto params2 = data->getDistributionParameters(quantilElem, size);
+
+        distr1.setInitialParams({params1[0], params1[1], 0, 0.1});
+        distr2.setInitialParams({params2[0], params2[1], 0, 0.1});
+
+        distr1.setPoints(distr1Points);
+        distr2.setPoints(distr2Points);
+
+        auto matchParams1 = distr1.gradDescent(ui->shakeSpinBox->value());
+        //fitParams = matchParams;
+        //descentProgress = distr1.descentProgress;
+        auto matchParams2 = distr2.gradDescent(ui->shakeSpinBox->value());
+
+        ui->mean1DoubleSpinBox->setValue(matchParams1[0]);
+        ui->sig1DoubleSpinBox->setValue(matchParams1[1]);
+        ui->as1DoubleSpinBox->setValue(matchParams1[2]);
+        ui->ex1DoubleSpinBox->setValue(matchParams1[3]);
+
+        ui->mean2DoubleSpinBox->setValue(matchParams2[0]);
+        ui->sig2DoubleSpinBox->setValue(matchParams2[1]);
+        ui->as2DoubleSpinBox->setValue(matchParams2[2]);
+        ui->ex2DoubleSpinBox->setValue(matchParams2[3]);
+
+        ui->x1DoubleSpinBox->setValue(points[quantilElem].first);
+        ui->aDoubleSpinBox->setValue(points[0].first);
+        ui->x2DoubleSpinBox->setValue(points.back().first);
+        drawChos(ui->plotWidget);
+   }
 }
 
 void MainWindow::on_pushButton_clicked()
 {
     DescentProgressView  *descentProgressView = new DescentProgressView();
     descentProgressView->setDescentProgress(this->descentProgress);
-    descentProgressView -> show();
+    descentProgressView->show();
+}
+
+void MainWindow::on_sigAffectionButton_clicked()
+{
+    GraphWindow *graphWindow = new GraphWindow();
+
+    vector<double> params = fitParams;
+
+    ChosDistribution distr;
+    distr.setPoints(data->getStepRelativePoints());
+    distr.setInitialParams(fitParams);
+    vector<pair<double, double>> points;
+    for(double d = 0.1; d < 5; d+=0.01)
+    {
+        params[1] = d;
+        points.push_back(make_pair(d, distr.RSS(data->getStepRelativePoints(), params[0], params[1], params[2], params[3])));
+    }
+
+    graphWindow->setPointsVector(points);
+    graphWindow->show();
 }

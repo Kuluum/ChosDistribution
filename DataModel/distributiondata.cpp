@@ -4,10 +4,15 @@
 DistributionData::DistributionData()
 {
     pointsChanged = true;
-    step = 0.5;
+    step = 1;
 }
 
-void DistributionData::setPoints(DisVector points) {
+void DistributionData::setStep(double step)
+{
+    this->step = step;
+}
+
+void DistributionData::setPoints(PointsVector points) {
     this->points = points;
     pointsChanged = true;
 }
@@ -23,12 +28,12 @@ void DistributionData::addPoint(double x, double y) {
     pointsChanged = true;
 }
 
-DisVector DistributionData::getPoints() {
+PointsVector DistributionData::getPoints() {
     return points;
 }
 
 vector<double> DistributionData::getDistributionParameters(int from, int to) {
-    DisVector points = getStepRelativePoints();
+    PointsVector points = getStepRelativePoints();
 
     double fSumm = 0.0;
     double xfSumm = 0.0;
@@ -64,7 +69,7 @@ vector<double> DistributionData::getDistributionParameters(int from, int to) {
     return vector<double>({mean, sigma, assymetry, excess});
 }
 
-DisVector DistributionData::getRelativePoints() {
+PointsVector DistributionData::getRelativePoints() {
     if (pointsChanged) {
         double summ = 0;
         for (pair<double, double> &p : points) {
@@ -80,8 +85,8 @@ DisVector DistributionData::getRelativePoints() {
     return relativePoints;
 }
 
-DisVector DistributionData::getStepRelativePoints() {
-    DisVector stepRelativePoints;
+PointsVector DistributionData::getStepRelativePoints() {
+    PointsVector stepRelativePoints;
 
     for (auto &p : getRelativePoints()) {
         stepRelativePoints.push_back(make_pair(p.first, p.second / step));
@@ -89,3 +94,32 @@ DisVector DistributionData::getStepRelativePoints() {
 
     return stepRelativePoints;
 }
+
+PointsVector DistributionData::getStepRelativePoints(int from, int to) {
+    PointsVector stepRelativePoints;
+
+    if (from < 0)
+    {
+        from = 0;
+    }
+
+    if (to < 0)
+    {
+        to = 0;
+    }
+
+    if (to > points.size())
+    {
+        to = points.size();
+    }
+
+    auto relPoints = getRelativePoints();
+
+    for (int i = from; i < to; i ++) {
+        auto point = relPoints[i];
+        stepRelativePoints.push_back(make_pair(point.first, point.second / step));
+    }
+
+    return stepRelativePoints;
+}
+
