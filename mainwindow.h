@@ -33,6 +33,8 @@ private slots:
 
     void on_sigAffectionButton_clicked();
 
+    void on_checkRssButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     DistributionData *data;

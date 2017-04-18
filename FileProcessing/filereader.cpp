@@ -22,7 +22,8 @@ QStringList FileReader::readFileWithDialog(QWidget *ui) {
 QStringList FileReader::readFileNamed(QString fileName) {
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly)) {
-        QMessageBox::information(0, "error", file.errorString());
+        //QMessageBox::information(0, "error", file.errorString());
+        return QStringList();
     }
 
     QTextStream in(&file);

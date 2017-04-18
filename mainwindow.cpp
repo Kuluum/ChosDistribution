@@ -61,12 +61,12 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
 
 
   double x2 = ui->x2DoubleSpinBox->value();
-/*
+
   double mean3 = ui->mean3DoubleSpinBox->value();
   double sig3 = ui->sig3DoubleSpinBox->value();
   double as3 = ui->as3DoubleSpinBox->value();
   double ex3 = ui->ex3DoubleSpinBox->value();
-
+/*
   double a3 = mean3;
   double m3 = 2 / (ex3 - as3*as3);
   double ny3 = m3*sig3*as3/2;
@@ -76,22 +76,20 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   qDebug() << "a2 = " << a2 << " m2 = " << m2 << " ny2 = " << ny2 << " beta2 = " << beta2;
   qDebug() << "a3 = " << a3 << " m3 = " << m3 << " ny3 = " << ny3 << " beta3 = " << beta3;
 */
-  for (double i=a; i<=x2; i+=0.001)
+  for (double i=a; i<=b; i+=0.001)
   {
 
     x.append(i);
 
     if (i < x1) {
-//        y.append(ChosDistribution::value(i, m1, a1, beta1, ny1));
         y.append(ChosDistribution::valueWithDistrParams(i, mean1, sig1, as1, ex1));
     }
     else if (i < x2) {
         y.append(ChosDistribution::valueWithDistrParams(i, mean2, sig2, as2, ex2));
-//        y.append(ChosDistribution::value(i, m2, a2, beta2, ny2));
     }
-//    else {
-//        y.append(ChosDistribution::value(i, m3, a3, beta3, ny3));
-//    }
+    else {
+        y.append(ChosDistribution::valueWithDistrParams(i, mean3, sig3, as3, ex3));
+    }
   }
 
   customPlot->addGraph();
@@ -101,7 +99,6 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
 
 double MainWindow::getChosValue(double x)
 {
-
   double mean1 = ui->mean1DoubleSpinBox->value();
   double sig1 = ui->sig1DoubleSpinBox->value();
   double as1 = ui->as1DoubleSpinBox->value();
@@ -201,6 +198,9 @@ void MainWindow::on_actionOpen_triggered()
 {
     FileReader f;
     QStringList stringList = f.readFileWithDialog(this);
+    if (stringList.size() == 0) {
+        return;
+    }
 //    QVector<QPair<double, double>> points;
     PointsVector points;
     data = new DistributionData();
@@ -217,7 +217,8 @@ void MainWindow::on_actionOpen_triggered()
     double step = points[1].first - points[0].first;
     data->setStep(step);
 
-    ui->quantilSpinBox->setValue(points.size()/2);
+    ui->quantilSpinBox->setValue(points.size()/3);
+    ui->quant2SpinBox->setValue(points.size() * 2 / 3);
 
     ui->plotWidget->clearPlottables();
     for (auto &p : data->getStepRelativePoints()) {
@@ -235,28 +236,36 @@ void MainWindow::on_fitButton_clicked()
         chosVector.clear();
         ChosDistribution distr1;
         ChosDistribution distr2;
+        ChosDistribution distr3;
 
         auto points = data->getStepRelativePoints();
 
 
         int quantilElem = ui->quantilSpinBox->value();
+        int quantil2Elem = ui->quant2SpinBox->value();
         int size = points.size();
 
         PointsVector distr1Points(points.begin(), points.begin()+quantilElem+1);
-        PointsVector distr2Points(points.begin()+ quantilElem, points.end());
+        PointsVector distr2Points(points.begin()+ quantilElem, points.begin()+quantil2Elem+1);
+        PointsVector distr3Points(points.begin()+ quantil2Elem, points.end());
+
         auto params1 = data->getDistributionParameters(0, quantilElem+1);
-        auto params2 = data->getDistributionParameters(quantilElem, size);
+        auto params2 = data->getDistributionParameters(quantilElem, quantil2Elem+1);
+        auto params3 = data->getDistributionParameters(quantil2Elem, size);
 
         distr1.setInitialParams({params1[0], params1[1], 0, 0.1});
         distr2.setInitialParams({params2[0], params2[1], 0, 0.1});
+        distr3.setInitialParams({params3[0], params3[1], 0, 0.1});
+//        distr3.setInitialParams({2.11943, 1.43895, -0.421716, 0.356356});
 
         distr1.setPoints(distr1Points);
         distr2.setPoints(distr2Points);
+        distr3.setPoints(distr3Points);
 
         auto matchParams1 = distr1.gradDescent(ui->shakeSpinBox->value());
-        //fitParams = matchParams;
         //descentProgress = distr1.descentProgress;
         auto matchParams2 = distr2.gradDescent(ui->shakeSpinBox->value());
+        auto matchParams3 = distr3.gradDescent(ui->shakeSpinBox->value());
 
         ui->mean1DoubleSpinBox->setValue(matchParams1[0]);
         ui->sig1DoubleSpinBox->setValue(matchParams1[1]);
@@ -268,9 +277,20 @@ void MainWindow::on_fitButton_clicked()
         ui->as2DoubleSpinBox->setValue(matchParams2[2]);
         ui->ex2DoubleSpinBox->setValue(matchParams2[3]);
 
-        ui->x1DoubleSpinBox->setValue(points[quantilElem].first);
+        ui->mean3DoubleSpinBox->setValue(matchParams3[0]);
+        ui->sig3DoubleSpinBox->setValue(matchParams3[1]);
+        ui->as3DoubleSpinBox->setValue(matchParams3[2]);
+        ui->ex3DoubleSpinBox->setValue(matchParams3[3]);
+
         ui->aDoubleSpinBox->setValue(points[0].first);
-        ui->x2DoubleSpinBox->setValue(points.back().first);
+        ui->x1DoubleSpinBox->setValue(points[quantilElem].first);
+        ui->x2DoubleSpinBox->setValue(points[quantil2Elem].first);
+        ui->bDoubleSpinBox->setValue(points.back().first);
+
+        ui->rss1Label->setText(QString::number(distr1.currentRss()));
+        ui->rss2Label->setText(QString::number(distr2.currentRss()));
+        ui->rss3Label->setText(QString::number(distr3.currentRss()));
+
         drawChos(ui->plotWidget);
    }
 }
@@ -300,4 +320,27 @@ void MainWindow::on_sigAffectionButton_clicked()
 
     graphWindow->setPointsVector(points);
     graphWindow->show();
+}
+
+void MainWindow::on_checkRssButton_clicked()
+{
+    auto points = data->getStepRelativePoints();
+
+
+    int quantilElem = ui->quantilSpinBox->value();
+    int quantil2Elem = ui->quant2SpinBox->value();
+    int size = points.size();
+
+    //348
+    PointsVector distr1Points(points.begin(), points.begin()+quantilElem+1);
+    PointsVector distr2Points(points.begin()+ quantilElem, points.begin()+quantil2Elem+1);
+    PointsVector distr3Points(points.begin()+ quantil2Elem, points.end());
+
+    double m1 = ui->mean1DoubleSpinBox->value();
+    double s1 = ui->sig1DoubleSpinBox->value();
+    double a1 = ui->as1DoubleSpinBox->value();
+    double e1 = ui->ex1DoubleSpinBox->value();
+
+    ChosDistribution::RSS(distr1Points, m1, s1, a1, e1);
+
 }

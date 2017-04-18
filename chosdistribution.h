@@ -16,7 +16,9 @@ public:
 
     void setPoints(PointsVector points);
 
-    double RSS(PointsVector dataVector, double mean, double sig, double as, double ex);
+    static double RSS(PointsVector dataVector, double mean, double sig, double as, double ex);
+
+    double currentRss();
 
     static double value(double x, double m, double a, double beta, double ny);
 
@@ -46,8 +48,9 @@ private:
 
     vector<double> initialParams;
     vector<double> currParams;
+    double currRss;
 
-    vector<double> shakeParams();
+    vector<double> shakeParams(double m, double s, double a, double e);
 };
 
 #endif // CHOSDISTRIBUTION_H
