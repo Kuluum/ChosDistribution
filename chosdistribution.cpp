@@ -91,33 +91,57 @@ double ChosDistribution::valueWithDistrParams(double x, double mean, double sig,
 }
 
 
-vector<double> ChosDistribution::gradDescent(size_t shakeCount) {
-    PROFILE_BLOCK("grad descent");
-    descentProgress.clear();
+vector<double> ChosDistribution::gradDescent(size_t shakeCount)
+{
+//    PROFILE_BLOCK("grad descent");
+    double bestRss = 100000;
+    vector<double> bestParams;
 
-    bool goodMatchRiched = false;
+    vector<double> initParams = this->initialParams;
+    if (shakeCount > 0) {
+       for (int i = 0; i < shakeCount+1; i++)
+       {
+           auto descentRes = gradDescent(initParams);
+           if (descentRes.first < bestRss) {
+               bestRss = descentRes.first;
+               bestParams = descentRes.second;
+           }
+           initParams = shakeParams(initialParams[0], initialParams[1]);
+       }
+    }
+    else
+    {
+        auto descentRes = gradDescent(initParams);
+        bestParams = descentRes.second;
+    }
+    return bestParams;
+}
+
+
+pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initParams)
+{
     bool descentSuccess = false;
     double rssMin = 0.005;
     double previousRss = 1e+6;
     double learnRate = 1;
 
-    vector<pair<double, vector<double>> >shakeVector;
-
-    vector<double> currentParams(this->currParams);
+    vector<double> currentParams(initParams);
     vector<double> bestParams(4, 0.0);
 
+//    qDebug() << "start gradient with init params " << initParams;
     double r = RSS(points, currentParams[0], currentParams[1], currentParams[2], currentParams[3]);
     if (isnan(r)) {
         currentParams[2] = 0;
         currentParams[3] = 0.1;
     }
-    // Get target.
+
+    // Get the target.
     else if(r <= rssMin) {
-        qDebug() << "Good match riched";
+//        qDebug() << "Good match riched";
         bestParams = currentParams;
-        qDebug() << "BEST PARAMS: " << bestParams;
+//        qDebug() << "BEST PARAMS: " << bestParams;
         currRss = r;
-        return bestParams;
+        return make_pair(r, bestParams);
     }
 
     vector<double> newParams(currentParams);
@@ -138,49 +162,27 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount) {
 
         double r = RSS(points, newParams[0], newParams[1], newParams[2], newParams[3]);
         descentProgress.push_back(r);
-        qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
-        qDebug() << "params = " << newParams;
+//        qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
+//        qDebug() << "params = " << newParams;
 
         // Last descent was too small, we get local minimum. Lets make shake to continue searching.
         if (!descentSuccess) {
-            qDebug() << "Descent too small. Local minimum riched.";
-            if (shakeCount == 0)
-            {
+//            qDebug() << "Descent too small. Local minimum riched.";
                 bestParams = currentParams;
                 currRss = previousRss;
                 break;
-            }
-            else if (shakeVector.size() < shakeCount+1)
-            {
-                learnRate = 1;
-                shakeVector.push_back(make_pair(previousRss, currentParams));
-                newParams = shakeParams(initialParams[0], initialParams[1], initialParams[2], initialParams[3]);
-                qDebug() << "shake = " << newParams;
-                currentParams = newParams;
-                previousRss = 1e+6;
-
-                if (shakeVector.size() == shakeCount+1)
-                {
-                    break;
-                }
-                else
-                {
-                    continue;
-                }
-            }
         }
 
         // Get target.
         if(r <= rssMin) {
-            qDebug() << "Good match riched. No need shake.";
+//            qDebug() << "Good match riched. No need shake.";
             bestParams = newParams;
             currRss = r;
-            goodMatchRiched = true;
             break;
         }
         // Bad descent step.
         else if (isnan(r) || r >= previousRss) {
-            qDebug() << "bad descent";
+//            qDebug() << "bad descent";
 
             // Bad descent fine.
             learnRate -= 0.5;
@@ -189,30 +191,9 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount) {
             }
             // There were too much bad steps, assume that we get curent local minimum. Lets make shake.
             if (learnRate < 0) {
-
-                if (shakeCount == 0)
-                {
                     bestParams = currentParams;
                     currRss = previousRss;
                     break;
-                }
-                else if (shakeVector.size() < shakeCount+1)
-                {
-                    learnRate = 1;
-                    shakeVector.push_back(make_pair(previousRss, currentParams));
-                    newParams = shakeParams(initialParams[0], initialParams[1], initialParams[2], initialParams[3]);
-                    qDebug() << "shake = " << newParams;
-                    currentParams = newParams;
-                    previousRss = 1e+6;
-                    if (shakeVector.size() == shakeCount+1)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
             }
             else
             {
@@ -228,23 +209,17 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount) {
             currentParams = newParams;
         }
 
-
     }
 
-    if (!goodMatchRiched && (shakeCount != 0) && (shakeVector.size() >= shakeCount + 1)) {
-        sort(shakeVector.begin(), shakeVector.end(),
-            [](const pair<double, vector<double>> &a, const pair<double, vector<double>> & b) -> bool
-        {
-            return a.first < b.first;
-        });
-        bestParams = shakeVector[0].second;
-        currRss = shakeVector[0].first;
-    }
-    qDebug() << "BEST PARAMS: " << bestParams;
+//    qDebug() << "BEST PARAMS: " << bestParams << " rss: " << currRss;
     currentParams = bestParams;
-    return bestParams;
-
+    return make_pair(currRss, bestParams);
 }
+
+
+
+
+
 
 #include <random>
 
@@ -255,10 +230,11 @@ double fRand(double fMin, double fMax)
     std::default_random_engine re(rd());
     double a_random_double = unif(re);
 
+//    qDebug() << "frand (" << fMin << "; " << fMax << ") = " << a_random_double;
     return a_random_double;
 }
 
-vector<double> ChosDistribution::shakeParams(double m, double s, double a, double e)
+vector<double> ChosDistribution::shakeParams(double m, double s)
 {
     double minSig = 0.4;
     double maxSig = 10;

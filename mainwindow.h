@@ -6,12 +6,22 @@
 #include "DataModel/distributiondata.h"
 #include "chosdistribution.h"
 #include <vector>
+#include <stdlib.h>
 
 class DistributionData;
 
 namespace Ui {
 class MainWindow;
 }
+
+struct fitResults
+{
+    double rss = 0;
+    int quantil1 = 0;
+    int quantil2 = 0;
+    vector<vector<double>> params;
+};
+
 
 class MainWindow : public QMainWindow
 {
@@ -47,6 +57,10 @@ private:
 
     double getChosValue(double x);
     double getChosValueWithDistrParams(double x, double mean, double sig, double as, double ex);
+
+
+    fitResults calcFit2(PointsVector points, int quantilElem, int shakeCount);
+    fitResults calcFit(PointsVector points, int quantilElem, int shakeCount);
 
 };
 

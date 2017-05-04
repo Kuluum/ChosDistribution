@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>844</width>
-    <height>659</height>
+    <height>661</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -76,7 +76,7 @@
         <item row="5" column="1">
          <widget class="QDoubleSpinBox" name="x1DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -95,7 +95,7 @@
            </sizepolicy>
           </property>
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>0.000000000000000</double>
@@ -114,7 +114,7 @@
         <item row="8" column="1">
          <widget class="QDoubleSpinBox" name="as2DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -133,7 +133,7 @@
         <item row="7" column="1">
          <widget class="QDoubleSpinBox" name="sig2DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -146,7 +146,7 @@
         <item row="11" column="1">
          <widget class="QDoubleSpinBox" name="mean3DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -176,7 +176,7 @@
         <item row="6" column="1">
          <widget class="QDoubleSpinBox" name="mean2DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -209,7 +209,7 @@
         <item row="9" column="1">
          <widget class="QDoubleSpinBox" name="ex2DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>0.000000000000000</double>
@@ -234,7 +234,7 @@
            </sizepolicy>
           </property>
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -267,7 +267,7 @@
         <item row="0" column="1">
          <widget class="QDoubleSpinBox" name="aDoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -280,7 +280,7 @@
         <item row="15" column="1">
          <widget class="QDoubleSpinBox" name="bDoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -300,7 +300,7 @@
         <item row="14" column="1">
          <widget class="QDoubleSpinBox" name="ex3DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>0.000000000000000</double>
@@ -344,7 +344,7 @@
         <item row="2" column="1">
          <widget class="QDoubleSpinBox" name="sig1DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -363,7 +363,7 @@
         <item row="10" column="1">
          <widget class="QDoubleSpinBox" name="x2DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -379,7 +379,7 @@
         <item row="13" column="1">
          <widget class="QDoubleSpinBox" name="as3DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -395,7 +395,7 @@
         <item row="1" column="1">
          <widget class="QDoubleSpinBox" name="mean1DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>-10000.000000000000000</double>
@@ -424,7 +424,7 @@
         <item row="12" column="1">
          <widget class="QDoubleSpinBox" name="sig3DoubleSpinBox">
           <property name="decimals">
-           <number>3</number>
+           <number>5</number>
           </property>
           <property name="minimum">
            <double>0.000000000000000</double>
@@ -491,79 +491,6 @@
        </sizepolicy>
       </property>
      </widget>
-    </item>
-    <item row="0" column="3">
-     <layout class="QGridLayout" name="gridLayout_3">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <item row="4" column="0">
-       <widget class="QLabel" name="rss3Label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="rss1Label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="pushButton">
-        <property name="text">
-         <string>Descent progress</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="sigAffectionButton">
-        <property name="text">
-         <string>Sig affection</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="rss2Label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QPushButton" name="checkRssButton">
-        <property name="text">
-         <string>check rss</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </item>
    </layout>
   </widget>

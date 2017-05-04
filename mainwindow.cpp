@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include "chosdistribution.h"
 
-#include <stdlib.h>
+
 #include <stdio.h>
 #include <math.h>
 
@@ -11,6 +11,10 @@
 //UI
 #include "descentprogressview.h"
 #include "graphwindow.h"
+
+// std
+#include <future>
+#include <thread>
 
 //TODO: remove
 #include <numeric>
@@ -228,44 +232,140 @@ void MainWindow::on_actionOpen_triggered()
 }
 
 
+fitResults MainWindow::calcFit(PointsVector points, int quantilElem, int shakeCount)
+{
+    fitResults results;
+
+    ChosDistribution distr1;
+    PointsVector distr1Points(points.begin(), points.begin()+quantilElem+1);
+    auto params1 = data->getDistributionParameters(0, quantilElem+1);
+    distr1.setPoints(distr1Points);
+    distr1.setInitialParams(params1);
+//    qDebug() << "first";
+    auto matchParams1 = distr1.gradDescent(shakeCount);
+
+    fitResults best2 = calcFit2(points, quantilElem, shakeCount);
+
+    double rss = distr1.currentRss() + best2.rss;
+    results.rss = rss;
+    results.quantil1 = quantilElem;
+    results.quantil2 = best2.quantil2;
+    vector<vector<double>> v({matchParams1, best2.params[0], best2.params[1]});
+    results.params = v;
+
+
+
+    return results;
+}
+
+
+fitResults MainWindow::calcFit2(PointsVector points, int quantilElem, int shakeCount)
+{
+    fitResults result;
+
+    int size = points.size();
+    double bestRss = 100000000;
+    vector<vector<double>> bestParams;
+    int bestQ2 = -1;
+
+//    for (int quantil2Elem = quantilElem + 4; quantil2Elem < size-4; quantil2Elem+=4)
+    {
+        int quantil2Elem = ui->quant2SpinBox->value();
+
+        ChosDistribution distr2;
+        ChosDistribution distr3;
+
+//        qDebug() << "q1:" << quantilElem << " q2:" << quantil2Elem;
+
+        PointsVector distr2Points(points.begin()+ quantilElem, points.begin()+quantil2Elem+1);
+        PointsVector distr3Points(points.begin()+ quantil2Elem, points.end());
+
+        auto params2 = data->getDistributionParameters(quantilElem, quantil2Elem+1);
+        auto params3 = data->getDistributionParameters(quantil2Elem, size);
+
+        distr2.setInitialParams({params2[0], params2[1], 0, 0.1});
+        distr3.setInitialParams({params3[0], params3[1], 0, 0.1});
+
+
+        distr2.setPoints(distr2Points);
+        distr3.setPoints(distr3Points);
+
+//        qDebug() << "second";
+        auto matchParams2 = distr2.gradDescent(shakeCount);
+//        qDebug() << "third";
+        auto matchParams3 = distr3.gradDescent(shakeCount);
+
+        double rss = distr2.currentRss() + distr3.currentRss();
+        if (rss < bestRss) {
+            bestParams = {matchParams2, matchParams3};
+            bestQ2 = quantil2Elem;
+            bestRss = rss;
+        }
+    }
+
+    result.rss = bestRss;
+    result.params = bestParams;
+    result.quantil1 = quantilElem;
+    result.quantil2 = bestQ2;
+
+    return result;
+}
+
+
 
 void MainWindow::on_fitButton_clicked()
 {
     if (data != nullptr)
     {
+
         chosVector.clear();
-        ChosDistribution distr1;
-        ChosDistribution distr2;
-        ChosDistribution distr3;
+
 
         auto points = data->getStepRelativePoints();
-
-
-        int quantilElem = ui->quantilSpinBox->value();
-        int quantil2Elem = ui->quant2SpinBox->value();
         int size = points.size();
+        vector<vector<double>> bestParams;
+        double bestRss = 10000000;
 
-        PointsVector distr1Points(points.begin(), points.begin()+quantilElem+1);
-        PointsVector distr2Points(points.begin()+ quantilElem, points.begin()+quantil2Elem+1);
-        PointsVector distr3Points(points.begin()+ quantil2Elem, points.end());
+        vector<shared_future<fitResults>> fitFutureVector;
 
-        auto params1 = data->getDistributionParameters(0, quantilElem+1);
-        auto params2 = data->getDistributionParameters(quantilElem, quantil2Elem+1);
-        auto params3 = data->getDistributionParameters(quantil2Elem, size);
+        fitResults bestResults;
+        int shakeCount = ui->shakeSpinBox->value();
+//        for (int q1 = 4; q1 < size-8; q1+=4)
+        int q1 = ui->quantilSpinBox->value();
+        {
+            MainWindow *that = this;
+            shared_future<fitResults> fitFuture = std::async(std::launch::async, [&points, q1, shakeCount, that]() -> fitResults
+            {
+                qDebug() << "start fit for q1 = " << q1;
+                fitResults res = that->calcFit(points, q1, shakeCount);
+                qDebug() << "end fit for q1 = " << q1;
+                return res;
+            });
+//            shared_future<fitResults> fitFuture = std::async(calcFit, this, points, q1, shakeCount);
+            fitFutureVector.push_back(std::move(fitFuture));
+            //            fitResults res =
 
-        distr1.setInitialParams({params1[0], params1[1], 0, 0.1});
-        distr2.setInitialParams({params2[0], params2[1], 0, 0.1});
-        distr3.setInitialParams({params3[0], params3[1], 0, 0.1});
-//        distr3.setInitialParams({2.11943, 1.43895, -0.421716, 0.356356});
+        }
 
-        distr1.setPoints(distr1Points);
-        distr2.setPoints(distr2Points);
-        distr3.setPoints(distr3Points);
+//        for(future<fitResults> fitFuture : fitFutureVector)
+//        {
+//            fitFuture.wait();
+//        }
 
-        auto matchParams1 = distr1.gradDescent(ui->shakeSpinBox->value());
-        //descentProgress = distr1.descentProgress;
-        auto matchParams2 = distr2.gradDescent(ui->shakeSpinBox->value());
-        auto matchParams3 = distr3.gradDescent(ui->shakeSpinBox->value());
+        for_each(fitFutureVector.begin(), fitFutureVector.end(), [&](shared_future<fitResults> fitFuture)
+        {
+            fitResults res = fitFuture.get();
+            if (res.rss < bestRss)
+            {
+                bestResults = res;
+                bestRss = res.rss;
+            }
+        });
+
+        auto matchParams1 = bestResults.params[0];
+        auto matchParams2 = bestResults.params[1];
+        auto matchParams3 = bestResults.params[2];
+
 
         ui->mean1DoubleSpinBox->setValue(matchParams1[0]);
         ui->sig1DoubleSpinBox->setValue(matchParams1[1]);
@@ -283,17 +383,19 @@ void MainWindow::on_fitButton_clicked()
         ui->ex3DoubleSpinBox->setValue(matchParams3[3]);
 
         ui->aDoubleSpinBox->setValue(points[0].first);
-        ui->x1DoubleSpinBox->setValue(points[quantilElem].first);
-        ui->x2DoubleSpinBox->setValue(points[quantil2Elem].first);
+        ui->x1DoubleSpinBox->setValue(points[bestResults.quantil1].first);
+        ui->x2DoubleSpinBox->setValue(points[bestResults.quantil2].first);
         ui->bDoubleSpinBox->setValue(points.back().first);
 
-        ui->rss1Label->setText(QString::number(distr1.currentRss()));
-        ui->rss2Label->setText(QString::number(distr2.currentRss()));
-        ui->rss3Label->setText(QString::number(distr3.currentRss()));
+//        ui->rss1Label->setText(QString::number(distr1.currentRss()));
+//        ui->rss2Label->setText(QString::number(distr2.currentRss()));
+//        ui->rss3Label->setText(QString::number(distr3.currentRss()));
 
         drawChos(ui->plotWidget);
    }
 }
+
+
 
 void MainWindow::on_pushButton_clicked()
 {

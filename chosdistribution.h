@@ -41,7 +41,7 @@ private:
     vector<double> gradLin(vector<pair<double, double>> points, vector<double> params);
     vector<double> gradQuadr(vector<pair<double, double>> points, vector<double> params);
 
-
+    pair<double, vector<double>>  gradDescent(vector<double> initParams);
     //DistributionData *distribution;
 
     PointsVector points;
@@ -50,7 +50,7 @@ private:
     vector<double> currParams;
     double currRss;
 
-    vector<double> shakeParams(double m, double s, double a, double e);
+    vector<double> shakeParams(double m, double s);
 };
 
 #endif // CHOSDISTRIBUTION_H
