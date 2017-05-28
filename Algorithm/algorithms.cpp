@@ -1,4 +1,5 @@
 #include "Algorithm/algorithms.h"
+#include <math.h>
 
 bool gluInvertMatrix(const double m[16], double invOut[16]);
 
@@ -15,6 +16,45 @@ double Algorithms::RSS(vector<pair<double, double>> &dataVector, const function<
         rss += diff * diff;
     }
     return rss;
+}
+
+double Algorithms::Integral(double a, double b, const function<double (double)> func)
+{
+    double H, S, X;
+    int N = 20;
+    H = (b - a) / N;
+    S = (func(a) - func(b));
+    for(int i = 1; i <= N / 2; ++i)
+    {
+        X = a + 2 * i * H;
+        S = S + 2 * func(X) + 4 * func(X - H);
+    }
+    S = S * H / 3;
+    return S;
+}
+
+double Algorithms::ChiCritical(int n, double alpha)
+{
+    double d;
+
+    if (alpha < 0.5)
+    {
+        d = -2.0637 * pow((log(1 / alpha) - 0.16), 0.4274) + 1.5774;
+    }
+    else
+    {
+        d = 2.0637 * pow((log(1 / ( 1 - alpha)) - 0.16), 0.4274) - 1.5774;
+    }
+
+    double A = d * sqrt(2);
+    double B = 2.0 / 3.0 * (d * d - 1);
+    double C = d * (d * d - 7) / 9.0 / sqrt(2);
+    double D = - (6 * pow(d, 4) + 14 * d * d - 32) / 405.0;
+    double E = d * (9 * pow(d, 4) + 256 * d * d - 433) / (4860.0 * sqrt(2));
+
+    double sqrtN = sqrt(n);
+    double chiCrit = n + A * sqrtN + B + C / sqrtN + D / n + E / (n * sqrtN);
+    return chiCrit;
 }
 
 vector<double> Algorithms::hessXgrad(const matrix &hess, const vector<double> &grad) {

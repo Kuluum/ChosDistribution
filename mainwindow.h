@@ -39,23 +39,26 @@ private slots:
 
     void on_fitButton_clicked();
 
+    void tableDataChanged(const QModelIndex&, const QModelIndex&);
+
     void on_pushButton_clicked();
 
-    void on_sigAffectionButton_clicked();
-
-    void on_checkRssButton_clicked();
+    void on_pushButton_2_clicked();
 
 private:
     Ui::MainWindow *ui;
+    QStandardItemModel *model;
+
     DistributionData *data;
     std::vector<double> descentProgress;
     std::vector<double> fitParams;
     std::vector<ChosDistribution> chosVector;
 
+    void tableDataChanged();
     void setupSlotConnection();
-    QCPBars* createBar(QCustomPlot *plotParent, double x, double height, double width);
+    QCPBars* createBar(QCustomPlot *plotParent, QVector<double> x, QVector<double> height, double width);
 
-    double getChosValue(double x);
+//    double getChosValue(double x);
     double getChosValueWithDistrParams(double x, double mean, double sig, double as, double ex);
 
 

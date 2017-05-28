@@ -16,18 +16,19 @@ public:
     void addPoint(pair<double, double> point);
     void addPoint(double x, double y);
     void setPoints(PointsVector points);
-    void setStep(double step);
 
     PointsVector getPoints();
     PointsVector getRelativePoints();
     PointsVector getStepRelativePoints();
     PointsVector getStepRelativePoints(int from, int to);
     vector<double> getDistributionParameters(int, int);
+    double getStep();
+    double getDistributionSize();
 
 private:
     PointsVector points;
     PointsVector relativePoints;
-    double step;
+    PointsVector normalizedRelativePoints;
     bool pointsChanged;
 };
 

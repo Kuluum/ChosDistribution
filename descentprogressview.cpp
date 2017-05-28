@@ -11,9 +11,6 @@ DescentProgressView::DescentProgressView(QWidget *parent) :
 
     ui->plotWidget->xAxis->setLabel("x");
     ui->plotWidget->yAxis->setLabel("y");
-
-//    ui->plotWidget->xAxis->setRange(0, 5);
-
 }
 
 DescentProgressView::~DescentProgressView()

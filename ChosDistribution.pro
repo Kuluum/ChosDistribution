@@ -16,25 +16,24 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     chosdistribution.cpp \
     qcustomplot/qcustomplot.cpp \
-    embededtest.cpp \
     FileProcessing/filereader.cpp \
     DataModel/distributiondata.cpp \
     Algorithm/algorithms.cpp \
     descentprogressview.cpp \
-    graphwindow.cpp
+    graphwindow.cpp \
+    tabledelegate.cpp
 
 HEADERS  += mainwindow.h \
     chosdistribution.h \
     qcustomplot/qcustomplot.h \
-    embededtest.h \
     FileProcessing/filereader.h \
     DataModel/distributiondata.h \
     Algorithm/algorithms.h \
     descentprogressview.h \
-    graphwindow.h
+    graphwindow.h \
+    tabledelegate.h
 
 FORMS    += mainwindow.ui \
-    embededtest.ui \
     descentprogressview.ui \
     graphwindow.ui
 

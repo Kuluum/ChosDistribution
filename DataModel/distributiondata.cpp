@@ -3,13 +3,7 @@
 
 DistributionData::DistributionData()
 {
-    pointsChanged = true;
-    step = 1;
-}
-
-void DistributionData::setStep(double step)
-{
-    this->step = step;
+    pointsChanged = true;  
 }
 
 void DistributionData::setPoints(PointsVector points) {
@@ -33,8 +27,10 @@ PointsVector DistributionData::getPoints() {
 }
 
 vector<double> DistributionData::getDistributionParameters(int from, int to) {
-    PointsVector points = getStepRelativePoints();
-
+    PointsVector points = getRelativePoints();
+   // if (normalizedRelativePoints.size() > 0) {
+   //     points = normalizedRelativePoints;
+   // }
     double fSumm = 0.0;
     double xfSumm = 0.0;
     int m = points.size();
@@ -70,24 +66,52 @@ vector<double> DistributionData::getDistributionParameters(int from, int to) {
 }
 
 PointsVector DistributionData::getRelativePoints() {
-    if (pointsChanged) {
-        double summ = 0;
-        for (pair<double, double> &p : points) {
-            summ += p.second;
+    double first = points.front().first;
+    double last = points.back().first;
+
+    double length = last - first;
+    if (length <= 10) {
+        if (pointsChanged) {
+            relativePoints.clear();
+            double summ = 0;
+            for (pair<double, double> &p : points) {
+                summ += p.second;
+            }
+
+            for (pair<double, double> &p : points) {
+                relativePoints.push_back(make_pair(p.first, p.second/summ));
+            }
+            pointsChanged = false;
         }
 
-        for (pair<double, double> &p : points) {
-            relativePoints.push_back(make_pair(p.first, p.second/summ));
+        return relativePoints;
+    }
+    else {
+        if (pointsChanged) {
+            double min = points.front().first;
+            double max = points.back().first;
+
+            normalizedRelativePoints.clear();
+
+            double summ = 0;
+            for (pair<double, double> &p : points) {
+                summ += p.second;
+            }
+
+            for (pair<double, double> &p : points) {
+                double normalisedX = 10 * (p.first - min)/(max - min);
+                normalizedRelativePoints.push_back(make_pair(normalisedX, p.second/summ));
+            }
         }
-        pointsChanged = false;
+
+        return normalizedRelativePoints;
     }
 
-    return relativePoints;
 }
 
 PointsVector DistributionData::getStepRelativePoints() {
     PointsVector stepRelativePoints;
-
+    double step = getStep();
     for (auto &p : getRelativePoints()) {
         stepRelativePoints.push_back(make_pair(p.first, p.second / step));
     }
@@ -114,7 +138,7 @@ PointsVector DistributionData::getStepRelativePoints(int from, int to) {
     }
 
     auto relPoints = getRelativePoints();
-
+    double step = getStep();
     for (int i = from; i < to; i ++) {
         auto point = relPoints[i];
         stepRelativePoints.push_back(make_pair(point.first, point.second / step));
@@ -123,3 +147,22 @@ PointsVector DistributionData::getStepRelativePoints(int from, int to) {
     return stepRelativePoints;
 }
 
+double DistributionData::getDistributionSize() {
+    double summ = 0;
+    for (auto &p : points) {
+        summ += p.second;
+    }
+    return summ;
+}
+
+double DistributionData::getStep()
+{
+    getRelativePoints();
+    if (normalizedRelativePoints.size() > 0) {
+        return normalizedRelativePoints[1].first - normalizedRelativePoints[0].first;
+    }
+    else {
+        return relativePoints[1].first - relativePoints[0].first;
+    }
+    //return step;
+}

@@ -7,10 +7,6 @@
 ChosDistribution::ChosDistribution() {
 }
 
-//void ChosDistribution::setDistribution(DistributionData *distribution) {
-//    this->distribution = distribution;
-//}
-
 void ChosDistribution::setInitialParams(vector<double> initialParams) {
     this->initialParams = initialParams;
     currParams = initialParams;
@@ -51,16 +47,16 @@ complex<double> ChosDistribution::cbeta(complex<double> z1, complex<double> z2) 
 
 double ChosDistribution::A(double beta, double ny) {
     double squareDiff = beta*beta - ny*ny;
-    int sig = (squareDiff >= 0) ? 1 : -1;
+    int sign = (ny >= 0) ? 1 : -1;
 
     if(squareDiff > 0) {
         return exp(atan(2*beta*ny/squareDiff));
     }
     else if (squareDiff < 0) {
-        return exp(atan(2*beta*ny/squareDiff+sig*M_PI));
+        return exp(atan(2*beta*ny/squareDiff) + sign*M_PI);
     }
     else {
-        return exp(M_PI_2*sig);
+        return exp(M_PI_2 * sign);
     }
 }
 
@@ -96,6 +92,7 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount)
 //    PROFILE_BLOCK("grad descent");
     double bestRss = 100000;
     vector<double> bestParams;
+    double rssMin = 0.005;
 
     vector<double> initParams = this->initialParams;
     if (shakeCount > 0) {
@@ -105,6 +102,10 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount)
            if (descentRes.first < bestRss) {
                bestRss = descentRes.first;
                bestParams = descentRes.second;
+           }
+           if (bestRss <= rssMin)
+           {
+               break;
            }
            initParams = shakeParams(initialParams[0], initialParams[1]);
        }
@@ -128,18 +129,17 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
     vector<double> currentParams(initParams);
     vector<double> bestParams(4, 0.0);
 
-//    qDebug() << "start gradient with init params " << initParams;
+    qDebug() << "start gradient with init params " << initParams;
     double r = RSS(points, currentParams[0], currentParams[1], currentParams[2], currentParams[3]);
     if (isnan(r)) {
         currentParams[2] = 0;
         currentParams[3] = 0.1;
     }
-
     // Get the target.
     else if(r <= rssMin) {
-//        qDebug() << "Good match riched";
+        qDebug() << "Good match riched with rss " << r;
         bestParams = currentParams;
-//        qDebug() << "BEST PARAMS: " << bestParams;
+        qDebug() << "BEST PARAMS: " << bestParams;
         currRss = r;
         return make_pair(r, bestParams);
     }
@@ -162,12 +162,12 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
 
         double r = RSS(points, newParams[0], newParams[1], newParams[2], newParams[3]);
         descentProgress.push_back(r);
-//        qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
-//        qDebug() << "params = " << newParams;
+        qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
+        qDebug() << "params = " << newParams;
 
         // Last descent was too small, we get local minimum. Lets make shake to continue searching.
         if (!descentSuccess) {
-//            qDebug() << "Descent too small. Local minimum riched.";
+            qDebug() << "Descent too small. Local minimum riched.";
                 bestParams = currentParams;
                 currRss = previousRss;
                 break;
@@ -175,14 +175,14 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
 
         // Get target.
         if(r <= rssMin) {
-//            qDebug() << "Good match riched. No need shake.";
+            qDebug() << "Good match riched. No need shake.";
             bestParams = newParams;
             currRss = r;
             break;
         }
         // Bad descent step.
         else if (isnan(r) || r >= previousRss) {
-//            qDebug() << "bad descent";
+            qDebug() << "bad descent";
 
             // Bad descent fine.
             learnRate -= 0.5;
@@ -211,26 +211,24 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
 
     }
 
-//    qDebug() << "BEST PARAMS: " << bestParams << " rss: " << currRss;
+    qDebug() << "BEST PARAMS: " << bestParams << " rss: " << currRss;
     currentParams = bestParams;
     return make_pair(currRss, bestParams);
 }
-
-
-
-
 
 
 #include <random>
 
 double fRand(double fMin, double fMax)
 {
-    std::uniform_real_distribution<double> unif(fMin, fMax);
-    std::random_device rd;
-    std::default_random_engine re(rd());
-    double a_random_double = unif(re);
-
-//    qDebug() << "frand (" << fMin << "; " << fMax << ") = " << a_random_double;
+    static std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    static std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> dis(fMin, fMax);
+   // double a_random_double = -1;
+   // for (int i = 0; i < 10; i ++) {
+    double a_random_double = dis(gen);
+   // qDebug() << "frand (" << fMin << "; " << fMax << ") = " << a_random_double;
+   // }
     return a_random_double;
 }
 
@@ -243,8 +241,8 @@ vector<double> ChosDistribution::shakeParams(double m, double s)
     double maxAs = 2.5;
 
     double maxEx = 20;
-    double mean = m * fRand(0.7, 1.3);
-    double sig = s * fRand(0.5, 2);
+    double mean = m * fRand(0.33, 3);
+    double sig = s * fRand(0.33, 3);
     if (sig < minSig)
     {
         sig = minSig;
@@ -253,7 +251,6 @@ vector<double> ChosDistribution::shakeParams(double m, double s)
     {
         sig = maxSig;
     }
-
 
     double as = fRand(minAs, maxAs);
     double minEx = 1.5 * as * as;
@@ -278,7 +275,6 @@ vector<double> ChosDistribution::gradLin(vector<pair<double, double>> points, ve
 
     return resGrad;
 }
-
 
 vector<double> ChosDistribution::gradQuadr(vector<pair<double, double>> points, vector<double> params)
 {

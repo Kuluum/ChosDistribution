@@ -39,6 +39,9 @@ class Algorithms
 public:
     Algorithms();
     static double RSS(vector<pair<double, double>> &dataVector, const function<double (double)> func);
+    static double Integral(double a, double b, const function<double (double)> func);
+    static double ChiCritical(int n, double alpha);
+
 //    static matrix multMatrix(const matrix &m1, const matrix &m2);
     static vector<double> hessXgrad(const matrix &hess, const vector<double> &grad);
     static matrix mesaInvertMatrix(const matrix &inp);
