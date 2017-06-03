@@ -45,6 +45,9 @@ private slots:
 
     void on_pushButton_2_clicked();
 
+    void mouseWheel();
+
+    void selectionChanged();
 private:
     Ui::MainWindow *ui;
     QStandardItemModel *model;
@@ -64,6 +67,8 @@ private:
 
     fitResults calcFit2(PointsVector points, int quantilElem, int shakeCount);
     fitResults calcFit(PointsVector points, int quantilElem, int shakeCount);
+
+    fitResults fitDensity(double rss1, double rss2, double rss3, double realDensity, fitResults prevRes);
 
 };
 

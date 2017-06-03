@@ -51,9 +51,9 @@ vector<double> DistributionData::getDistributionParameters(int from, int to) {
         auto p = points.at(i);
         double diff = p.first - mean;
         double square = diff * diff;
-        variance += square * p.second;
-        assymetry += square * diff * p.second;
-        excess += square * square * p.second;
+        variance += square * p.first;
+        assymetry += square * diff * p.first;
+        excess += square * square * p.first;
     }
 
 
@@ -88,8 +88,9 @@ PointsVector DistributionData::getRelativePoints() {
     }
     else {
         if (pointsChanged) {
-            double min = points.front().first;
-            double max = points.back().first;
+            double step = (points[1].first - points.front().first)/2.0;
+            double min = points.front().first - step;
+            double max = points.back().first + step;
 
             normalizedRelativePoints.clear();
 
@@ -99,7 +100,7 @@ PointsVector DistributionData::getRelativePoints() {
             }
 
             for (pair<double, double> &p : points) {
-                double normalisedX = 10 * (p.first - min)/(max - min);
+                double normalisedX =  10 * (p.first - min)/(max - min);
                 normalizedRelativePoints.push_back(make_pair(normalisedX, p.second/summ));
             }
         }

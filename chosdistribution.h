@@ -23,7 +23,7 @@ public:
     static double value(double x, double m, double a, double beta, double ny);
 
     vector<double> gradDescent(size_t shakeCount);
-
+    vector<double> gradLinDens(vector<double> params, double dens, double a, double b);
 
    // pair<vector<double>, vector<vector<double>> > derevetives();
 
@@ -42,6 +42,7 @@ private:
     vector<double> gradQuadr(vector<pair<double, double>> points, vector<double> params);
 
     pair<double, vector<double>>  gradDescent(vector<double> initParams);
+    pair<double, vector<double>>  gradDescentDensity(vector<double> initParams, double densityShift, double a, double b);
     //DistributionData *distribution;
 
     PointsVector points;

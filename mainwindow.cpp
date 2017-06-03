@@ -17,7 +17,6 @@
 #include <future>
 #include <thread>
 
-//TODO: remove
 #include <QLocale>
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    drawChos(ui->plotWidget);
     ui->plotWidget->setInteraction(QCP::iRangeDrag, true);
     ui->plotWidget->setInteraction(QCP::iRangeZoom, true);
+    ui->plotWidget->setInteraction(QCP::iSelectAxes, true);
 
     ui->plotWidget->xAxis->setLabel("x");
     ui->plotWidget->yAxis->setLabel("y");
@@ -37,7 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     model = new QStandardItemModel(0, 2, this);
     connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(tableDataChanged(QModelIndex,QModelIndex)));
-
+    connect(ui->plotWidget, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(mouseWheel()));
+    connect(ui->plotWidget, SIGNAL(selectionChangedByUser()), this, SLOT(selectionChanged()));
     model->setHorizontalHeaderItem(0, new QStandardItem(QString("x")));
     model->setHorizontalHeaderItem(1, new QStandardItem(QString("y")));
     TableDelegate *delegate = new TableDelegate;
@@ -54,7 +55,75 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::drawChos(QCustomPlot *customPlot)
+void MainWindow::selectionChanged()
+{
+  /*
+   normally, axis base line, axis tick labels and axis labels are selectable separately, but we want
+   the user only to be able to select the axis as a whole, so we tie the selected states of the tick labels
+   and the axis base line together. However, the axis label shall be selectable individually.
+
+   The selection state of the left and right axes shall be synchronized as well as the state of the
+   bottom and top axes.
+
+   Further, we want to synchronize the selection of the graphs with the selection state of the respective
+   legend item belonging to that graph. So the user can select a graph by either clicking on the graph itself
+   or on its legend item.
+  */
+
+  // make top and bottom axes be selected synchronously, and handle axis and tick labels as one selectable object:
+  if (ui->plotWidget->xAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->plotWidget->xAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->plotWidget->xAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->plotWidget->xAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->plotWidget->xAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->plotWidget->xAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+  // make left and right axes be selected synchronously, and handle axis and tick labels as one selectable object:
+  if (ui->plotWidget->yAxis->selectedParts().testFlag(QCPAxis::spAxis) || ui->plotWidget->yAxis->selectedParts().testFlag(QCPAxis::spTickLabels) ||
+      ui->plotWidget->yAxis2->selectedParts().testFlag(QCPAxis::spAxis) || ui->plotWidget->yAxis2->selectedParts().testFlag(QCPAxis::spTickLabels))
+  {
+    ui->plotWidget->yAxis2->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+    ui->plotWidget->yAxis->setSelectedParts(QCPAxis::spAxis|QCPAxis::spTickLabels);
+  }
+
+  // synchronize selection of graphs with selection of corresponding legend items:
+  for (int i=0; i<ui->plotWidget->graphCount(); ++i)
+  {
+    QCPGraph *graph = ui->plotWidget->graph(i);
+    QCPPlottableLegendItem *item = ui->plotWidget->legend->itemWithPlottable(graph);
+    if (item->selected() || graph->selected())
+    {
+      item->setSelected(true);
+      graph->setSelection(QCPDataSelection(graph->data()->dataRange()));
+    }
+  }
+}
+
+void MainWindow::mouseWheel()
+{
+  // if an axis is selected, only allow the direction of that axis to be zoomed
+  // if no axis is selected, both directions may be zoomed
+
+  if (ui->plotWidget->xAxis->selectedParts().testFlag(QCPAxis::spAxis)){
+    ui->plotWidget->axisRect()->setRangeZoomAxes(ui->plotWidget->xAxis,ui->plotWidget->yAxis);
+    ui->plotWidget->axisRect()->setRangeZoom(ui->plotWidget->xAxis->orientation());
+  }
+  else if (ui->plotWidget->yAxis->selectedParts().testFlag(QCPAxis::spAxis)){
+    ui->plotWidget->axisRect()->setRangeZoomAxes(ui->plotWidget->xAxis,ui->plotWidget->yAxis);
+    ui->plotWidget->axisRect()->setRangeZoom(ui->plotWidget->yAxis->orientation());
+  }
+  else if (ui->plotWidget->xAxis2->selectedParts().testFlag(QCPAxis::spAxis)){
+    ui->plotWidget->axisRect()->setRangeZoomAxes(ui->plotWidget->xAxis2,ui->plotWidget->yAxis2);
+    ui->plotWidget->axisRect()->setRangeZoom(ui->plotWidget->xAxis2->orientation());
+  }
+  else if (ui->plotWidget->yAxis2->selectedParts().testFlag(QCPAxis::spAxis)){
+    ui->plotWidget->axisRect()->setRangeZoomAxes(ui->plotWidget->xAxis2,ui->plotWidget->yAxis2);
+    ui->plotWidget->axisRect()->setRangeZoom(ui->plotWidget->yAxis2->orientation());
+  }
+  else
+    ui->plotWidget->axisRect()->setRangeZoom(Qt::Horizontal|Qt::Vertical);
+}
+
+void MainWindow::drawChos(QCustomPlot *plotWidget)
 {
   QVector<double> x, y;
 
@@ -86,7 +155,7 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   {
       step = data->getStep();
   }
-  for (double i=a; i<=b; i+=step/100)
+  for (double i=a-step/2; i<=b+step/2; i+=step/100)
   {
 
     x.append(i);
@@ -104,9 +173,14 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
   }
 
   if (data) {
+      double firstRss = 0.0;
+      double secRss = 0.0;
+      double thrRss = 0.0;
+
       double rss = 0.0;
       double khi = 0.0;
       double size = data ->getDistributionSize();
+      double integral = 0.0;
       for(auto &p : data->getStepRelativePoints()) {
           double value = 0.0;
           double i = p.first;
@@ -140,9 +214,20 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
           if (isnan(value)) {
               break;
           }
+          integral += integralValue;
           double r = p.second - value;
           rss += r*r;
-//          qDebug() << "i="<<p.first;
+
+          if (i < x1) {
+            firstRss += r*r;
+          }
+          else if (i < x2) {
+              secRss += r*r;
+          }
+          else {
+              thrRss += r*r;
+          }
+
           double sq = size * p.second * step;
 //          qDebug() << "sq="<<sq;
           integralValue *= size;
@@ -152,16 +237,28 @@ void MainWindow::drawChos(QCustomPlot *customPlot)
           chi *= chi;
           chi /= integralValue;
           khi += chi;
-//          qDebug()<<"khi="<<khi;
+
       }
-      //khi *= pow(data->getDistributionSize(), 2);
-      double chiCrit95 = Algorithms::ChiCritical(data->getPoints().size() - 14, 0.95);
-      double chiCrit99 = Algorithms::ChiCritical(data->getPoints().size() - 14, 0.99);
-      QString result = QString("rss = %1 \nchi = %2\nchiCrit(0.95) = %3\nchiCrit(0.99) = %4").arg(QString::number(rss), QString::number(khi), QString::number(chiCrit95),QString::number(chiCrit99));
+      qDebug()<<"firsRss="<<firstRss<<" secRss=" << secRss << "thrRss=" << thrRss;
+      int freed = data->getPoints().size() - 14;
+      if (freed <= 0) {
+          freed = 1;
+      }
+      double chiCrit95 = Algorithms::ChiCritical(freed, 0.95);
+      double chiCrit99 = Algorithms::ChiCritical(freed, 0.99);
+      QString result = QString("chi = %1\nchiCrit(0.05) = %2\nchiCrit(0.01) = %3\n").arg(
+                   QString::number(khi),
+                  QString::number(chiCrit95),QString::number(chiCrit99)
+                  );
+//                  QString::number(integral));
+
+
+
       ui->resultTextEdit->setText(result);
   }
-  customPlot->addGraph();
-  customPlot->graph(0)->setData(x, y);
+  plotWidget->addGraph();
+  plotWidget->graph(0)->setData(x, y);
+  plotWidget->replot();
 }
 
 double MainWindow::getChosValueWithDistrParams(double x, double mean, double sig, double as, double ex) {
@@ -198,11 +295,12 @@ void MainWindow::setupSlotConnection() {
 
 void MainWindow::spinboxValueChanged()
 {
-    ui->plotWidget->clearGraphs();
-    drawChos(ui->plotWidget);
-
-
-    ui->plotWidget->replot();
+    QSpinBox *sender = (QSpinBox*)QObject::sender();
+    if (sender->hasFocus()) {
+        ui->plotWidget->clearGraphs();
+        drawChos(ui->plotWidget);
+        ui->plotWidget->replot();
+    }
 }
 
 QCPBars* MainWindow::createBar(QCustomPlot *plotParent, QVector<double> x, QVector<double> height, double width) {
@@ -378,7 +476,116 @@ void MainWindow::on_fitButton_clicked()
 
 
         drawChos(ui->plotWidget);
-   }
+
+
+//        double x1 = points[bestResults.quantil1].first;
+//        double x2 = points[bestResults.quantil2].first;
+//        double firstRss = 0.0;
+//        double secRss = 0.0;
+//        double thrRss = 0.0;
+
+//        double rss = 0.0;
+//        double khi = 0.0;
+//        //double size = data ->getDistributionSize();
+//        double integral = 0.0;
+//        for(auto &p : data->getStepRelativePoints()) {
+//            double value = 0.0;
+//            double i = p.first;
+//            double integralValue;
+//            if (i < x1) {
+//                value = ChosDistribution::value(i, m1, a1, beta1, ny1);
+
+//                integralValue = Algorithms::Integral(i-step/2.0, i+step/2.0, [&](double d)->double{
+//                    double v = ChosDistribution::value(d, m1, a1, beta1, ny1);
+//                    return v;
+//                });
+//            }
+//            else if (i < x2) {
+//                value = ChosDistribution::value(i, m2, a2, beta2, ny2);
+
+//                integralValue = Algorithms::Integral(i-step/2.0, i+step/2.0, [&](double d)->double{
+//                    double v = ChosDistribution::value(d, m2, a2, beta2, ny2);
+//  //                  qDebug() << "integer value 2" << v;
+//                    return v;
+//                });
+//            }
+//            else {
+//                value = ChosDistribution::value(i, m3, a3, beta3, ny3);
+
+//                integralValue = Algorithms::Integral(i-step/2.0, i+step/2.0, [&](double d)->double{
+//                    double v = ChosDistribution::value(d, m3, a3, beta3, ny3);
+//  //                  qDebug() << "integer value 3 ("<<d<<", "<<m3<<", "<<a3<<", "<<beta3<<", "<<ny3<<") = " << v;
+//                    return v;
+//                });
+//            }
+//            if (isnan(value)) {
+//                break;
+//            }
+//            integral += integralValue;
+//            double r = p.second - value;
+//            rss += r*r;
+
+//            if (i < x1) {
+//              firstRss += r*r;
+//            }
+//            else if (i < x2) {
+//                secRss += r*r;
+//            }
+//            else {
+//                thrRss += r*r;
+//            }
+
+//            double sq = size * p.second * step;
+//  //          qDebug() << "sq="<<sq;
+//            integralValue *= size;
+//  //          qDebug() << "integral=" << integralValue;
+//            double chi = 0.0;
+//            chi += integralValue - sq;
+//            chi *= chi;
+//            chi /= integralValue;
+//            khi += chi;
+//        }
+       // fitDensity(firstRss, secRss, thrRss, integral, bestResults);
+
+    }
+}
+
+fitResults MainWindow::fitDensity(double rss1, double rss2, double rss3, double realDensity, fitResults prevRes)
+{
+    auto points = data->getStepRelativePoints();
+    double rssSum = rss1 + rss2 + rss3;
+
+    double per1 = rss1/rssSum;
+    double per2 = rss2/rssSum;
+    double per3 = rss3/rssSum;
+
+    double densityShift = 1 - realDensity;
+
+    double shift1 = densityShift * per1;
+    double shift2 = densityShift * per2;
+    double shift3 = densityShift * per3;
+
+    int q1 = prevRes.quantil1;
+    int q2 = prevRes.quantil2;
+
+    ChosDistribution distr1;
+    ChosDistribution distr2;
+    ChosDistribution distr3;
+    PointsVector distr1Points(points.begin(), points.begin()+q1+1);
+    PointsVector distr2Points(points.begin() + q1, points.begin() + q2+1);
+    PointsVector distr3Points(points.begin() + q2, points.end());
+    distr1.setPoints(distr1Points);
+    distr2.setPoints(distr2Points);
+    distr3.setPoints(distr3Points);
+
+
+  //  std::vector<double> newRes1 = distr1.gradLinDens(prevRes.params[0], shift1, points[0].first, points[prevRes.quantil1].first );
+  //  std::vector<double> newRes2 = distr2.gradLinDens(prevRes.params[0], shift2, points[prevRes.quantil1].first,  points[prevRes.quantil2].first);
+  //  std::vector<double> newRes3 = distr3.gradLinDens(prevRes.params[0], shift3, points[prevRes.quantil2].first,  points.back().first);
+
+//    qDebug()<<newRes1;
+  //  qDebug()<<newRes2;
+  //  qDebug()<<newRes3;
 }
 
 fitResults MainWindow::calcFit(PointsVector points, int quantilElem, int shakeCount)

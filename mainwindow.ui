@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ChosDistribution</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <property name="enabled">
@@ -106,15 +106,22 @@
         <property name="bottomMargin">
          <number>1</number>
         </property>
+        <item row="6" column="1">
+         <widget class="QSpinBox" name="q2SpinBox"/>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>2 квантиль</string>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="4">
          <widget class="QLabel" name="label_7">
           <property name="text">
            <string>μ2</string>
           </property>
          </widget>
-        </item>
-        <item row="5" column="6">
-         <widget class="QSpinBox" name="shakeSpinBox"/>
         </item>
         <item row="2" column="5">
          <widget class="QDoubleSpinBox" name="ny2DoubleSpinBox">
@@ -135,6 +142,9 @@
           </property>
          </widget>
         </item>
+        <item row="5" column="6">
+         <widget class="QSpinBox" name="shakeSpinBox"/>
+        </item>
         <item row="3" column="7">
          <widget class="QDoubleSpinBox" name="beta3DoubleSpinBox">
           <property name="decimals">
@@ -148,33 +158,6 @@
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="QLabel" name="label_18">
-          <property name="text">
-           <string>shake</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="4">
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>μ3</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_15">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>a</string>
           </property>
          </widget>
         </item>
@@ -204,6 +187,33 @@
           </property>
          </widget>
         </item>
+        <item row="5" column="5">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>встряски</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>μ3</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_15">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>a</string>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="1">
          <widget class="QDoubleSpinBox" name="a1DoubleSpinBox">
           <property name="sizePolicy">
@@ -229,10 +239,24 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="6">
+         <widget class="QLabel" name="label_14">
+          <property name="text">
+           <string>β3</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="2">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>x1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>m3</string>
           </property>
          </widget>
         </item>
@@ -249,17 +273,17 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
-         <widget class="QLabel" name="label_12">
+        <item row="1" column="4">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>m3</string>
+           <string>μ1</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="6">
-         <widget class="QLabel" name="label_14">
+        <item row="2" column="6">
+         <widget class="QLabel" name="label_9">
           <property name="text">
-           <string>β3</string>
+           <string>β2</string>
           </property>
          </widget>
         </item>
@@ -288,20 +312,6 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>μ1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="6">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>β2</string>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="3">
          <widget class="QDoubleSpinBox" name="m3DoubleSpinBox">
           <property name="decimals">
@@ -315,36 +325,6 @@
           </property>
           <property name="singleStep">
            <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QDoubleSpinBox" name="a3DoubleSpinBox">
-          <property name="decimals">
-           <number>3</number>
-          </property>
-          <property name="minimum">
-           <double>-1000000.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>1000000.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>m2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="6">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>β1</string>
           </property>
          </widget>
         </item>
@@ -386,6 +366,36 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>m2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="6">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>β1</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QDoubleSpinBox" name="a3DoubleSpinBox">
+          <property name="decimals">
+           <number>3</number>
+          </property>
+          <property name="minimum">
+           <double>-1000000.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>1000000.000000000000000</double>
+          </property>
+          <property name="singleStep">
+           <double>0.100000000000000</double>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="7">
          <widget class="QDoubleSpinBox" name="beta2DoubleSpinBox">
           <property name="decimals">
@@ -402,13 +412,6 @@
           </property>
           <property name="value">
            <double>0.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_11">
-          <property name="text">
-           <string>a3</string>
           </property>
          </widget>
         </item>
@@ -435,6 +438,13 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>a3</string>
+          </property>
+         </widget>
+        </item>
         <item row="3" column="5">
          <widget class="QDoubleSpinBox" name="ny3DoubleSpinBox">
           <property name="decimals">
@@ -451,23 +461,30 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>a2</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="6">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>b</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="7">
          <widget class="QDoubleSpinBox" name="bDoubleSpinBox">
           <property name="decimals">
-           <number>5</number>
+           <number>3</number>
           </property>
           <property name="minimum">
            <double>-1000000.000000000000000</double>
           </property>
           <property name="maximum">
            <double>1000000.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>a2</string>
           </property>
          </widget>
         </item>
@@ -496,10 +513,17 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="6">
-         <widget class="QLabel" name="label_16">
+        <item row="5" column="7">
+         <widget class="QPushButton" name="fitButton">
           <property name="text">
-           <string>b</string>
+           <string>Подогнать</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>1 квантиль</string>
           </property>
          </widget>
         </item>
@@ -529,37 +553,20 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_17">
-          <property name="text">
-           <string>q1</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="2">
-         <widget class="QLabel" name="label_19">
-          <property name="text">
-           <string>q2</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="7">
-         <widget class="QPushButton" name="fitButton">
-          <property name="text">
-           <string>Fit</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3">
-         <widget class="QSpinBox" name="q2SpinBox"/>
-        </item>
         <item row="5" column="1">
          <widget class="QSpinBox" name="q1SpinBox"/>
         </item>
-        <item row="6" column="1">
+        <item row="7" column="1">
          <widget class="QCheckBox" name="autoQuantilCheckBox">
           <property name="text">
-           <string>auto quantil</string>
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Авто выбор</string>
           </property>
          </widget>
         </item>
@@ -582,12 +589,12 @@
      <x>0</x>
      <y>0</y>
      <width>912</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="title">
-     <string>  File</string>
+     <string>Файл</string>
     </property>
     <addaction name="actionOpen"/>
    </widget>
@@ -596,7 +603,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>Открыть</string>
    </property>
   </action>
  </widget>

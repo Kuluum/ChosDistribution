@@ -103,10 +103,10 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount)
                bestRss = descentRes.first;
                bestParams = descentRes.second;
            }
-           if (bestRss <= rssMin)
-           {
-               break;
-           }
+//           if (bestRss <= rssMin)
+//           {
+//               break;
+//           }
            initParams = shakeParams(initialParams[0], initialParams[1]);
        }
     }
@@ -118,11 +118,10 @@ vector<double> ChosDistribution::gradDescent(size_t shakeCount)
     return bestParams;
 }
 
-
 pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initParams)
 {
     bool descentSuccess = false;
-    double rssMin = 0.005;
+    double rssMin = 0.001;
     double previousRss = 1e+6;
     double learnRate = 1;
 
@@ -175,7 +174,7 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
 
         // Get target.
         if(r <= rssMin) {
-            qDebug() << "Good match riched. No need shake.";
+            qDebug() << "Good match riched.";
             bestParams = newParams;
             currRss = r;
             break;
@@ -216,6 +215,95 @@ pair<double, vector<double>> ChosDistribution::gradDescent(vector<double> initPa
     return make_pair(currRss, bestParams);
 }
 
+pair<double, vector<double>> ChosDistribution::gradDescentDensity(vector<double> initParams, double densityShift, double a, double b)
+{
+    bool descentSuccess = false;
+    double rssMin = 0.005;
+    double previousRss = 1e+6;
+    double learnRate = 1;
+
+    vector<double> currentParams(initParams);
+    vector<double> bestParams(4, 0.0);
+
+    qDebug() << "start gradient with init params " << initParams;
+
+    vector<double> newParams(currentParams);
+    int step = 0;
+    while(true)
+    {
+        step++;
+        descentSuccess = false;
+        vector<double> grad = gradLinDens(currentParams, densityShift, a, b);
+
+        // Seve small grad elements.
+        for (int i = 0; i < 4; i ++) {
+            if (fabs(grad[i]) > 0.001) {
+                newParams[i] -= learnRate * grad[i];
+                descentSuccess = true;
+            }
+        }
+
+        double integralValue = Algorithms::Integral(a, b, [&](double d)->double{
+            double v = ChosDistribution::value(d, newParams[0], newParams[1], newParams[2], newParams[3]);
+            return v;
+        });
+        //double predictionError = (integralValue + densityShift) - 1;
+
+        double r = (integralValue + densityShift) - 1;
+
+        //qDebug() << step << ") learn rate = " << learnRate << " rss = " << r;
+        //qDebug() << "params = " << newParams;
+
+        // Last descent was too small, we get local minimum. Lets make shake to continue searching.
+        if (!descentSuccess) {
+           // qDebug() << "Descent too small. Local minimum riched.";
+                bestParams = currentParams;
+                currRss = previousRss;
+                break;
+        }
+
+        // Get target.
+        if(r <= rssMin) {
+            qDebug() << "Good match riched. No need shake.";
+            bestParams = newParams;
+            currRss = r;
+            break;
+        }
+        // Bad descent step.
+        else if (isnan(r) || r >= previousRss) {
+          //  qDebug() << "bad descent";
+
+            // Bad descent fine.
+            learnRate -= 0.5;
+            if (learnRate == 0) {
+                learnRate = 0.05;
+            }
+            // There were too much bad steps, assume that we get curent local minimum. Lets make shake.
+            if (learnRate < 0) {
+                    bestParams = currentParams;
+                    currRss = previousRss;
+                    break;
+            }
+            else
+            {
+                newParams = currentParams;
+            }
+        }
+        // Good descent step.
+        else {
+            // Good descent promotion.
+            learnRate += 0.1;
+
+            previousRss = r;
+            currentParams = newParams;
+        }
+
+    }
+
+   // qDebug() << "BEST PARAMS: " << bestParams << " rss: " << currRss;
+    currentParams = bestParams;
+    return make_pair(currRss, bestParams);
+}
 
 #include <random>
 
@@ -273,6 +361,25 @@ vector<double> ChosDistribution::gradLin(vector<pair<double, double>> points, ve
         }
     }
 
+    return resGrad;
+}
+
+vector<double> ChosDistribution::gradLinDens(vector<double> params, double dens, double a, double b)
+{
+
+    vector<double>resGrad(4, 0.0);
+    double step = points[1].first - points[0].first;
+    for (auto p : points) {
+    vector<double> funcGrad = functionGradient(p.first, params[0], params[1], params[2], params[3]);
+    double integralValue = Algorithms::Integral(p.first-step/2, p.first+step/2, [&](double d)->double{
+        double v = ChosDistribution::value(d, params[0], params[1], params[2], params[3]);
+        return v;
+    });
+    double predictionError = (integralValue + dens) - 1;
+    for (int i = 0; i < 4; i++) {
+        resGrad[i] += 2 * predictionError * funcGrad[i];
+    }
+    }
     return resGrad;
 }
 
